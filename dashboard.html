@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — CTpaste</title>
+    <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Lightbox for screenshot preview -->
+    <div id="imgLightbox" onclick="closeLightbox()">
+        <img id="lightboxImg" src="" alt="Screenshot">
+    </div>
+
+    <div class="dash-wrap">
+        <!-- Header -->
+        <div class="dash-header">
+            <div>
+                <h1>My Dashboard</h1>
+                <span id="userRoll" style="color:var(--text2); font-size:.85rem;"></span>
+            </div>
+            <div class="dash-header-right">
+                <span id="planBadge" class="plan-badge go">GO</span>
+                <a href="index.html" class="btn btn-outline btn-sm">Home</a>
+                <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Status messages -->
+        <div id="statusMsg" class="status-msg"></div>
+
+        <!-- Plan suspended notice -->
+        <div id="suspendedNotice" class="status-msg" style="display:none;">
+            Your account has been suspended. Please contact the admin.
+        </div>
+
+        <!-- Stats row -->
+        <div class="stat-grid">
+            <div class="card stat-card">
+                <div class="stat-label">Current Plan</div>
+                <div class="stat-value" id="planName">GO</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-label">Typing Speed</div>
+                <div class="stat-value" id="planSpeed">Slow</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-label">Session</div>
+                <div class="stat-value" id="planDuration">1 hr</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-label">Cooldown</div>
+                <div class="stat-value">2 hrs</div>
+            </div>
+        </div>
+
+
+        <!-- Pending payment notice -->
+        <div id="pendingNotice" class="card" style="margin-bottom:24px; display:none; border-color:var(--yellow);">
+            <h3 style="font-size:.95rem; color:var(--yellow); margin-bottom:8px;">Payment Under Review</h3>
+            <p style="font-size:.88rem; color:var(--text2);">
+                Your payment screenshot for <strong id="pendingPlanName"></strong> has been submitted and is pending
+                admin approval.
+                Once approved, the plan will activate on your next app login.
+            </p>
+            <p id="pendingSubmittedAt" style="font-size:.8rem; color:var(--text3); margin-top:8px;"></p>
+        </div>
+
+        <!-- Plan Details + Upgrade -->
+        <div class="card" style="margin-bottom:24px;">
+            <h3 style="font-size:.95rem; color:var(--text2); margin-bottom:14px;">Plan Details</h3>
+            <div id="planDetails" style="font-size:.9rem; line-height:1.9;"></div>
+        </div>
+
+        <!-- Payment Section -->
+        <div class="card" id="paymentSection" style="margin-bottom:24px;">
+            <div
+                style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+                <h3 style="font-size:.95rem; color:var(--text2);">Upgrade Plan — Pay via UPI</h3>
+                <span id="paymentWindow" class="payment-window-badge closed">Loading...</span>
+            </div>
+
+            <p style="font-size:.83rem; color:var(--text2); margin-bottom:16px;">
+                Payment windows: <strong style="color:var(--text);">7:00–8:00 AM</strong> &nbsp;·&nbsp;
+                <strong style="color:var(--text);">3:00–6:00 PM</strong> &nbsp;·&nbsp;
+                <strong style="color:var(--text);">9:00–11:00 PM</strong>
+            </p>
+
+            <!-- Plan selector -->
+            <div class="form-group">
+                <label>Select Plan to Purchase</label>
+                <select id="planSelect" onchange="onPlanSelected()">
+                    <option value="">-- Choose a plan --</option>
+                    <option value="PRO_SPEED:20">PRO Speed — ₹20 (Fast typing)</option>
+                    <option value="PRO_HOUR:40">PRO Hour — ₹40 (+1 hr session)</option>
+                    <option value="PRO_BOTH:60">PRO Both — ₹60 (Fast + 2hrs)</option>
+                    <option value="SUPER:100">SUPER — ₹100 (Medium + 3hrs)</option>
+                </select>
+            </div>
+
+            <!-- QR panel (shown after plan selected) -->
+            <div id="qrPanel" style="display:none; text-align:center;">
+                <hr class="divider">
+                <div class="qr-panel">
+                    <div class="qr-amount" id="qrAmount">₹0</div>
+                    <div class="qr-sub">Scan with any UPI app (PhonePe, GPay, Paytm)</div>
+                    <img id="qrImg" src="" alt="UPI QR Code"
+                        style="width:200px; height:200px; border-radius:10px; margin:16px auto; display:block; border:4px solid var(--bg3);">
+                    <p style="font-size:.8rem; color:var(--text2);">UPI ID: <strong id="upiId"
+                            style="color:var(--accent);">@upi</strong></p>
+                </div>
+
+                <!-- Screenshot upload -->
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('screenshotInput').click()">
+                    <input type="file" id="screenshotInput" accept="image/*" onchange="onScreenshotSelected(event)">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)"
+                        stroke-width="1.5" style="margin-bottom:8px;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <p>Click or drag to upload payment screenshot</p>
+                    <p style="font-size:.76rem; margin-top:4px;">JPG, PNG, WEBP supported</p>
+                </div>
+                <div id="uploadPreviewWrap" style="display:none; margin-top:14px;">
+                    <img id="uploadPreview" src="" alt=""
+                        style="max-height:140px; border-radius:8px; border:2px solid var(--border);"
+                        onclick="openLightbox(this.src)">
+                    <p id="uploadFileName" style="font-size:.8rem; color:var(--text2); margin-top:6px;"></p>
+                </div>
+
+                <div id="payWindowClosedMsg" class="status-msg warn" style="display:none; margin-top:14px;">
+                    Payment window is currently closed. Come back during 7–8 AM, 3–6 PM, or 9–11 PM.
+                </div>
+
+                <button id="submitPaymentBtn" class="btn btn-primary mt-16" onclick="submitPayment()"
+                    style="width:100%;" disabled>
+                    Submit Payment for Review
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        (function () {
+            const user = getLoggedInUser();
+            if (!user) { window.location.href = "auth.html"; return; }
+            loadDashboard(user);
+            checkPaymentWindow();
+            setInterval(checkPaymentWindow, 60000);
+        })();
+
+        let selectedFile = null;
+
+        function compressImageToBase64(file, maxW = 600, qual = 0.6) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const cvs = document.createElement("canvas");
+                        let w = img.width, h = img.height;
+                        if (w > maxW) { h = Math.round((h * maxW) / w); w = maxW; }
+                        cvs.width = w; cvs.height = h;
+                        const ctx = cvs.getContext("2d");
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(cvs.toDataURL("image/jpeg", qual));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function onPlanSelected() {
+            const val = document.getElementById("planSelect").value;
+            if (!val) { document.getElementById("qrPanel").style.display = "none"; return; }
+            const [plan, amount] = val.split(":");
+            document.getElementById("qrAmount").textContent = "₹" + amount;
+            document.getElementById("qrPanel").style.display = "block";
+
+            // Generate UPI QR using API
+            const upi = "CTpaste.pay@upi"; // Replace with actual UPI ID
+            document.getElementById("upiId").textContent = upi;
+            const upiData = encodeURIComponent(`upi://pay?pa=${upi}&pn=CTpaste&am=${amount}&cu=INR&tn=CTpaste+${plan}`);
+            document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${upiData}&bgcolor=21262d&color=c9d1d9&margin=10`;
+        }
+
+        function onScreenshotSelected(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                document.getElementById("uploadPreview").src = ev.target.result;
+                document.getElementById("uploadFileName").textContent = file.name;
+                document.getElementById("uploadPreviewWrap").style.display = "block";
+            };
+            reader.readAsDataURL(file);
+            document.getElementById("submitPaymentBtn").disabled = false;
+        }
+
+        async function submitPayment() {
+            const user = getLoggedInUser();
+            if (!user || !selectedFile) return;
+
+            if (!isPaymentWindowOpen()) {
+                document.getElementById("payWindowClosedMsg").style.display = "block";
+                return;
+            }
+
+            const planVal = document.getElementById("planSelect").value;
+            const [plan, amount] = planVal.split(":");
+
+            const btn = document.getElementById("submitPaymentBtn");
+            btn.disabled = true;
+            btn.textContent = "Uploading...";
+
+            try {
+                // Compress image to Base64 (Stores directly in Realtime DB for Free plan compatibility)
+                const base64Image = await compressImageToBase64(selectedFile);
+
+                // Write to payment_requests in Realtime DB
+                await fbSet(`payment_requests/${user.rollNumber}_${Date.now()}`, {
+                    roll_number: user.rollNumber,
+                    name: user.name,
+                    requested_plan: plan,
+                    amount: parseInt(amount),
+                    screenshot_url: base64Image,
+                    submitted_at: Date.now(),
+                    status: "pending"
+                });
+
+                // Also mark on user profile
+                await fbUpdate(`users/${user.rollNumber}`, {
+                    pending_plan: plan,
+                    pending_submitted_at: Date.now()
+                });
+
+                showStatus("statusMsg", "Payment submitted! Waiting for admin approval.", "success");
+                btn.textContent = "Submitted!";
+                document.getElementById("pendingPlanName").textContent = plan;
+                document.getElementById("pendingNotice").style.display = "block";
+                document.getElementById("paymentSection").style.display = "none";
+            } catch (err) {
+                showStatus("statusMsg", "Upload failed: " + err.message, "error");
+                btn.disabled = false;
+                btn.textContent = "Submit Payment for Review";
+            }
+        }
+
+        function openLightbox(src) {
+            document.getElementById("lightboxImg").src = src;
+            document.getElementById("imgLightbox").classList.add("open");
+        }
+        function closeLightbox() {
+            document.getElementById("imgLightbox").classList.remove("open");
+        }
+    </script>
+</body>
+
+</html>

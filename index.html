@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CTpaste — Stealth typing engine for students. Type code into any IDE naturally.">
+    <title>CTpaste — Stealth Typing Engine</title>
+    <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="nav-brand"><img src="assets/icon.png" alt="CTpaste"
+                    style="height: 28px; vertical-align: middle; margin-right: 10px; border-radius: 6px;">CTpaste</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#guide">Guide</a></li>
+                <li><a href="#download">Download</a></li>
+                <li><a href="#pricing">Plans</a></li>
+                <li><a href="auth.html" class="nav-cta">Login / Sign Up</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <h1>Code Smarter.<br>Type Naturally.</h1>
+            <p class="subtitle">
+                CTpaste simulates real keystrokes so your code appears typed live in any IDE —
+                character by character, with human-like speed and timing.
+            </p>
+            <div class="hero-buttons">
+                <a href="#download" class="btn btn-primary">Get the App</a>
+                <a href="#guide" class="btn btn-outline">See How it Works</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="alt-bg">
+        <div class="container">
+            <h2 class="section-title">Why CTpaste?</h2>
+            <p class="section-subtitle">Everything a student needs, nothing they don't.</p>
+            <div class="features-grid">
+                <div class="card">
+                    <div class="feature-icon" style="font-family: serif; font-style: italic;">I</div>
+                    <h3 class="feature-title">Real Keystrokes</h3>
+                    <p class="feature-desc">Sends input via the Windows API — indistinguishable from manual typing at
+                        the system level.</p>
+                </div>
+                <div class="card">
+                    <div class="feature-icon" style="font-family: serif; font-style: italic;">II</div>
+                    <h3 class="feature-title">3 Speed Modes</h3>
+                    <p class="feature-desc">Slow, Medium, or Fast — with natural random delays that mimic real human
+                        typing rhythm.</p>
+                </div>
+                <div class="card">
+                    <div class="feature-icon" style="font-family: serif; font-style: italic;">III</div>
+                    <h3 class="feature-title">IDE-Aware</h3>
+                    <p class="feature-desc">Handles auto-closing tags, brackets, and Python indentation automatically
+                        without skipping a beat.</p>
+                </div>
+                <div class="card">
+                    <div class="feature-icon" style="font-family: serif; font-style: italic;">IV</div>
+                    <h3 class="feature-title">Phone Sync</h3>
+                    <p class="feature-desc">Copy code on your phone. It instantly appears on your PC via Firebase sync —
+                        no USB needed.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How to Use — Detailed Guide -->
+    <section id="guide">
+        <div class="container">
+            <h2 class="section-title">Detailed Usage Guide</h2>
+            <p class="section-subtitle">Follow these steps exactly for the best experience.</p>
+
+            <!-- Requirements -->
+            <div class="req-box">
+                <h4>Before You Start</h4>
+                <ul>
+                    <li>Windows 10 or 11 (64-bit) for the desktop app</li>
+                    <li>Your roll number account created on this website</li>
+                    <li>Your IDE open and ready (VS Code, IntelliJ, Eclipse etc.)</li>
+                    <li>An active plan session (check your dashboard)</li>
+                </ul>
+            </div>
+
+            <div class="steps-grid">
+                <div class="card step-card">
+                    <div class="step-num">1</div>
+                    <h3>Login &amp; Download</h3>
+                    <p>Create your account using your roll number on the <a href="auth.html">Login page</a>. Then
+                        download the app from the <a href="#download">Download section</a>. You must be logged in to
+                        download.</p>
+                </div>
+
+                <div class="card step-card">
+                    <div class="step-num">2</div>
+                    <h3>Launch the App</h3>
+                    <p>Open <code>CTpaste.exe</code>. A login screen will appear. Enter your roll number and password.
+                        The app checks your plan and starts the session timer.</p>
+                </div>
+
+                <div class="card step-card">
+                    <div class="step-num">3</div>
+                    <h3>Click "Start"</h3>
+                    <p>Press the Start button in the app. The status turns green — <em>"Running — Alt+V to paste"</em>.
+                        The keyboard hotkey is now active. Minimise the app.</p>
+                </div>
+
+                <div class="card step-card">
+                    <div class="step-num">4</div>
+                    <h3>Copy Your Code</h3>
+                    <p>Copy any code with <code>Ctrl+C</code> — from a browser, a file, or send it from your phone using
+                        the Phone Sync feature in the app.</p>
+                </div>
+
+                <div class="card step-card">
+                    <div class="step-num">5</div>
+                    <h3>Switch to Your IDE</h3>
+                    <p>Open your IDE (VS Code, IntelliJ, etc.). Click inside the editor to place your cursor at the
+                        right position. Make sure the file is in edit mode.</p>
+                </div>
+
+                <div class="card step-card">
+                    <div class="step-num">6</div>
+                    <h3>Press Alt+V to Paste</h3>
+                    <p>Press <code>Alt + V</code>. CTpaste will start typing the code character by character. Don't
+                        press any keys while it's typing. Wait for it to finish.</p>
+                </div>
+
+                <div class="card step-card">
+                    <div class="step-num">7</div>
+                    <h3>IDE Auto-Completion</h3>
+                    <p>If your IDE auto-completes tags (e.g. types <code>&lt;/div&gt;</code> automatically), CTpaste
+                        detects this and skips duplicates. Works with HTML, Python, Java, and more.</p>
+                </div>
+
+                <div class="card step-card">
+                    <div class="step-num">8</div>
+                    <h3>Session &amp; Cooldown</h3>
+                    <p>Your plan gives you a fixed session time (1–3 hrs). When it expires, the app locks. After a
+                        3-hour cooldown, your session automatically resets and you can use it again.</p>
+                </div>
+
+                <div class="card step-card">
+                    <div class="step-num">9</div>
+                    <h3>Phone Sync</h3>
+                    <p>In the app, click "Connect Phone" to get a 6-digit pairing code. Enter it in the CTpaste
+                        Android app. Copy code on your phone — it syncs to the PC clipboard instantly.</p>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div
+                style="margin-top: 32px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--rl); padding: 24px 28px;">
+                <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--accent);">Tips &amp; Tricks</h3>
+                <ul style="list-style: none; font-size: .88rem; color: var(--text2); line-height: 2;">
+                    <li>→ Minimise the app to system tray while it's typing — it works in the background</li>
+                    <li>→ Use "Slow" speed if the IDE is lagging or missing characters</li>
+                    <li>→ For Python: indentation is handled automatically — just copy the code as-is</li>
+                    <li>→ If typing stops unexpectedly, click "Stop" then "Start" and press Alt+V again</li>
+                    <li>→ Your session timer continues even if you close and reopen the app</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download -->
+    <section id="download" class="alt-bg">
+        <div class="container">
+            <h2 class="section-title">Download</h2>
+            <p class="section-subtitle">Available for Windows. Linux version launching soon.</p>
+
+            <div class="download-grid">
+                <!-- Windows -->
+                <div class="card download-card">
+                    <div class="os-logo">
+                        <!-- Windows logo SVG -->
+                        <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="4" y="4" width="37" height="37" rx="3" fill="#F35325" />
+                            <rect x="47" y="4" width="37" height="37" rx="3" fill="#81BC06" />
+                            <rect x="4" y="47" width="37" height="37" rx="3" fill="#05A6F0" />
+                            <rect x="47" y="47" width="37" height="37" rx="3" fill="#FFBA08" />
+                        </svg>
+                    </div>
+                    <h3>Windows</h3>
+                    <p>Windows 10 / 11 — 64-bit<br>~80 MB · .exe installer</p>
+                    <div id="winDownloadArea">
+                        <a href="#" id="winDownloadBtn" class="btn btn-primary btn-sm" style="width:100%;"
+                            onclick="handleDownload(event)">
+                            Download .exe
+                        </a>
+                        <p id="winLoginMsg" class="login-gate-msg" style="display:none;">
+                            Please <a href="auth.html">login</a> to download.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Linux -->
+                <div class="card download-card">
+                    <div class="os-logo">
+                        <!-- Linux/Tux SVG -->
+                        <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="44" cy="32" rx="18" ry="22" fill="#f5c842" />
+                            <ellipse cx="44" cy="56" rx="22" ry="18" fill="#e8b200" />
+                            <circle cx="36" cy="27" r="4" fill="#1a1a1a" />
+                            <circle cx="52" cy="27" r="4" fill="#1a1a1a" />
+                            <circle cx="37" cy="26" r="1.5" fill="white" />
+                            <circle cx="53" cy="26" r="1.5" fill="white" />
+                            <ellipse cx="44" cy="35" rx="6" ry="3" fill="#e8a000" />
+                            <rect x="30" y="66" width="10" height="14" rx="5" fill="#f5c842" />
+                            <rect x="48" y="66" width="10" height="14" rx="5" fill="#f5c842" />
+                            <ellipse cx="24" cy="58" rx="7" ry="10" rx="5" fill="#f5c842"
+                                transform="rotate(-20 24 58)" />
+                            <ellipse cx="64" cy="58" rx="7" ry="10" fill="#f5c842" transform="rotate(20 64 58)" />
+                        </svg>
+                    </div>
+                    <h3>Linux</h3>
+                    <p>Ubuntu / Debian — Coming Soon<br>Build in progress</p>
+                    <span class="btn btn-disabled btn-sm" style="width:100%;">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing">
+        <div class="container">
+            <h2 class="section-title">Plans</h2>
+            <p class="section-subtitle">Start free on GO. Upgrade anytime through your dashboard.</p>
+
+            <div class="pricing-grid">
+                <div class="card pricing-card">
+                    <h3>GO</h3>
+                    <div class="pricing-price">Free</div>
+                    <p class="pricing-desc">Default plan for all students</p>
+                    <ul class="pricing-features">
+                        <li>Slow typing speed (150–200ms)</li>
+                        <li>1 hour session</li>
+                        <li>2 hour cooldown</li>
+                        <li>Phone sync included</li>
+                    </ul>
+                    <span class="btn btn-outline btn-sm" style="width:100%;">Default</span>
+                </div>
+
+                <div class="card pricing-card featured">
+                    <div class="pricing-badge">Popular</div>
+                    <h3>PRO Add-ons</h3>
+                    <div class="pricing-price">&#8377;20 - &#8377;60</div>
+                    <p class="pricing-desc">Stack on top of GO</p>
+                    <ul class="pricing-features">
+                        <li>Speed Boost — &#8377;20 (Fast typing)</li>
+                        <li>Extra Hour — &#8377;40 (+1 hr session)</li>
+                        <li>Both — &#8377;60 (Fast + 2 hrs)</li>
+                        <li>2 hour cooldown</li>
+                    </ul>
+                    <a href="auth.html" class="btn btn-primary btn-sm" style="width:100%;">Get PRO</a>
+                </div>
+
+                <div class="card pricing-card">
+                    <h3>SUPER</h3>
+                    <div class="pricing-price">&#8377;100</div>
+                    <p class="pricing-desc">Maximum session time</p>
+                    <ul class="pricing-features">
+                        <li>Medium typing speed (100–150ms)</li>
+                        <li>3 hour session (1 + 2 bonus hrs)</li>
+                        <li>2 hour cooldown</li>
+                        <li>Phone sync included</li>
+                    </ul>
+                    <a href="auth.html" class="btn btn-outline btn-sm" style="width:100%;">Get SUPER</a>
+                </div>
+            </div>
+
+            <p style="text-align:center; color:var(--text2); font-size:.85rem; margin-top:24px;">
+                Plans are purchased via UPI through your dashboard during payment windows (7–8 AM · 3–6 PM · 9–11 PM).
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>CTpaste &copy; 2026 &nbsp;|&nbsp; <a href="admin.html" style="color:var(--text3);">Admin</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Check login state for download gating
+        function handleDownload(e) {
+            e.preventDefault();
+            const user = localStorage.getItem("CTpaste_user");
+            if (!user) {
+                document.getElementById("winLoginMsg").style.display = "block";
+                document.getElementById("winDownloadBtn").style.display = "none";
+                return;
+            }
+            // Replace with actual EXE URL or serve from folder
+            const link = document.createElement("a");
+            link.href = "CTpaste.exe";
+            link.download = "CTpaste.exe";
+            link.click();
+        }
+
+        // Show correct download button state on load
+        window.addEventListener("load", () => {
+            const user = localStorage.getItem("CTpaste_user");
+            if (!user) {
+                const btn = document.getElementById("winDownloadBtn");
+                btn.textContent = "Login to Download";
+                btn.classList.replace("btn-primary", "btn-outline");
+            }
+        });
+    </script>
+</body>
+
+</html>

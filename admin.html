@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — CTpaste</title>
+    <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Lightbox for screenshot preview -->
+    <div id="imgLightbox" onclick="closeLightbox()">
+        <img id="lightboxImg" src="" alt="">
+    </div>
+
+    <!-- Admin Login -->
+    <div id="adminLogin" class="auth-wrapper">
+        <div class="card auth-card">
+            <div class="auth-logo"><img src="assets/icon.png" alt="Logo"
+                    style="height: 32px; vertical-align: middle; margin-right: 10px; border-radius: 8px;">CTpaste Admin
+            </div>
+            <p class="auth-sub">Administration Panel</p>
+
+            <div id="adminStatus" class="status-msg"></div>
+
+            <!-- First-time setup -->
+            <div id="adminSetup" style="display:none;">
+                <p style="color:var(--text2);font-size:.9rem;margin-bottom:18px;">First time — create your admin
+                    password.</p>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="adminNewPass" placeholder="Choose admin password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="adminNewPassConfirm" placeholder="Confirm password">
+                </div>
+                <button class="btn btn-primary btn-full" onclick="setupAdminPassword()">Set Password</button>
+            </div>
+
+            <!-- Login form -->
+            <div id="adminLoginForm">
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="adminPass" placeholder="Enter admin password"
+                        onkeydown="if(event.key==='Enter') adminLogin()">
+                </div>
+                <button class="btn btn-primary btn-full" onclick="adminLogin()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" style="display:none;">
+        <div class="admin-wrap">
+            <div class="dash-header">
+                <h1 style="color:var(--accent);">Admin Panel</h1>
+                <button class="btn btn-outline btn-sm" onclick="adminLogout()">Logout</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="admin-stats" id="adminStats">
+                <div class="admin-stat">
+                    <div class="label">Total Users</div>
+                    <div class="value" id="statTotal">—</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="label">Signed Up</div>
+                    <div class="value" id="statSignedUp">—</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="label">GO</div>
+                    <div class="value" id="statGo">—</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="label">PRO</div>
+                    <div class="value" id="statPro">—</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="label">SUPER</div>
+                    <div class="value" id="statSuper">—</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="label">Suspended</div>
+                    <div class="value" id="statSuspended" style="color:var(--red);">—</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="label">Pending Payments</div>
+                    <div class="value" id="statPending" style="color:var(--yellow);">—</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="admin-tab-bar">
+                <button class="admin-tab active" id="tab-users" onclick="switchTab('users')">Users</button>
+                <button class="admin-tab" id="tab-payments" onclick="switchTab('payments')">
+                    Payment Queue <span id="paymentNotifBadge" class="notif-badge" style="display:none;">0</span>
+                </button>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="tabUsers">
+                <input type="text" class="admin-search" id="searchInput" placeholder="Search by roll number or name..."
+                    oninput="filterUsers()">
+                <div class="users-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Roll Number</th>
+                                <th>Name</th>
+                                <th>Plan</th>
+                                <th>Status</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <tr>
+                                <td colspan="6" style="text-align:center;padding:40px;color:var(--text3);">Loading
+                                    users...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payment Queue Tab -->
+            <div id="tabPayments" style="display:none;">
+                <div id="paymentQueueEmpty" style="text-align:center; padding:60px; color:var(--text3); display:none;">
+                    No pending payment requests
+                </div>
+                <div id="paymentQueueList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        (function () { checkAdminSetup(); })();
+        function openLightbox(src) {
+            document.getElementById("lightboxImg").src = src;
+            document.getElementById("imgLightbox").classList.add("open");
+        }
+        function closeLightbox() {
+            document.getElementById("imgLightbox").classList.remove("open");
+        }
+    </script>
+</body>
+
+</html>

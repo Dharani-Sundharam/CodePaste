@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — CTpaste</title>
+    <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0b0d14;
+            --surface: #12141f;
+            --surface2: #1a1d2e;
+            --border: rgba(255, 255, 255, .08);
+            --text: #e8eaf6;
+            --text2: #8892b0;
+            --text3: #4a5280;
+            --accent: #7c6ef7;
+            /* indigo-violet */
+            --accent-h: #9c8fff;
+            --accent-d: #5b4fe0;
+            --coral: #ff6b81;
+            /* secondary / error */
+            --green: #43e97b;
+            --r: 14px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Animated background blobs */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: .35;
+            z-index: 0;
+            animation: float 8s ease-in-out infinite alternate;
+        }
+
+        body::before {
+            width: 480px;
+            height: 480px;
+            background: radial-gradient(circle, #5b4fe0, transparent 70%);
+            top: -100px;
+            left: -100px;
+        }
+
+        body::after {
+            width: 360px;
+            height: 360px;
+            background: radial-gradient(circle, #ff6b81, transparent 70%);
+            bottom: -80px;
+            right: -80px;
+            animation-delay: -4s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(40px, 30px) scale(1.08);
+            }
+        }
+
+        /* Card wrapper */
+        .auth-page {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Logo mark */
+        .logo-mark {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 32px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--accent), var(--coral));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 0 24px rgba(124, 110, 247, .4);
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -.3px;
+            color: var(--text);
+        }
+
+        /* Card */
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 40px 36px;
+            backdrop-filter: blur(20px);
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, .04) inset,
+                0 24px 64px rgba(0, 0, 0, .5);
+            animation: slideUp .4s cubic-bezier(.2, .8, .4, 1) both;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-title {
+            font-size: 1.55rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            letter-spacing: -.4px;
+        }
+
+        .auth-sub {
+            font-size: .88rem;
+            color: var(--text2);
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        /* Divider */
+        .auth-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 24px 0;
+        }
+
+        /* Welcome back chip */
+        .welcome-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(124, 110, 247, .1);
+            border: 1px solid rgba(124, 110, 247, .25);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: .83rem;
+            color: var(--accent-h);
+            margin-bottom: 22px;
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--text2);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 13px 16px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: .95rem;
+            font-family: inherit;
+            transition: border-color .2s, box-shadow .2s;
+            appearance: none;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124, 110, 247, .15);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text3);
+        }
+
+        /* Primary button */
+        .btn-auth {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent-d), var(--accent));
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: .95rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s, opacity .15s;
+            box-shadow: 0 4px 20px rgba(124, 110, 247, .35);
+            margin-top: 6px;
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 28px rgba(124, 110, 247, .45);
+        }
+
+        .btn-auth:active {
+            transform: scale(.98);
+        }
+
+        /* Back link */
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: .82rem;
+            color: var(--text2);
+            cursor: pointer;
+            transition: color .2s;
+        }
+
+        .back-link:hover {
+            color: var(--accent-h);
+        }
+
+        /* Status message */
+        .status-msg {
+            padding: 12px 16px;
+            border-radius: 9px;
+            font-size: .85rem;
+            margin-bottom: 18px;
+            display: none;
+            line-height: 1.45;
+        }
+
+        .status-msg.error {
+            display: block;
+            background: rgba(255, 107, 129, .09);
+            color: var(--coral);
+            border: 1px solid rgba(255, 107, 129, .25);
+        }
+
+        .status-msg.success {
+            display: block;
+            background: rgba(67, 233, 123, .09);
+            color: var(--green);
+            border: 1px solid rgba(67, 233, 123, .25);
+        }
+
+        .status-msg.info {
+            display: block;
+            background: rgba(124, 110, 247, .09);
+            color: var(--accent-h);
+            border: 1px solid rgba(124, 110, 247, .25);
+        }
+
+        /* Home link top */
+        .home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .8rem;
+            color: var(--text2);
+            text-decoration: none;
+            margin-bottom: 28px;
+            transition: color .2s;
+        }
+
+        .home-link:hover {
+            color: var(--text);
+        }
+
+        /* Step transition */
+        .step {
+            animation: fadeStep .25s ease both;
+        }
+
+        @keyframes fadeStep {
+            from {
+                opacity: 0;
+                transform: translateX(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-page">
+
+        <a href="index.html" class="home-link">
+            ← Back to Home
+        </a>
+
+        <div class="logo-mark">
+            <img src="assets/icon.png" alt="CTpaste"
+                style="height: 48px; width: 48px; border-radius: 12px; margin-right: 12px; display: inline-block; vertical-align: middle;">
+            <span class="logo-text">CTpaste</span>
+        </div>
+
+        <div class="auth-card">
+            <div id="statusMsg" class="status-msg"></div>
+
+            <!-- Step 1: Enter Roll Number -->
+            <div id="stepRoll" class="step">
+                <div class="auth-title">Welcome back</div>
+                <p class="auth-sub">Enter your roll number to sign in or create your account.</p>
+
+                <div class="form-group">
+                    <label for="rollNumber">Roll Number</label>
+                    <input type="text" id="rollNumber" placeholder="e.g. 111524104001" maxlength="15" autofocus
+                        onkeydown="if(event.key==='Enter') checkRollNumber()">
+                </div>
+                <button class="btn-auth" onclick="checkRollNumber()">Continue →</button>
+            </div>
+
+            <!-- Step 2a: Login (existing user) -->
+            <div id="stepLogin" style="display:none;" class="step">
+                <div id="welcomeChip" class="welcome-chip">
+                    <span style="font-family: serif; font-style: italic;">User</span>
+                    <strong id="loginName"></strong>
+                </div>
+                <div class="auth-title">Sign in</div>
+                <p class="auth-sub">Enter your password to access your session dashboard.</p>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password"
+                        onkeydown="if(event.key==='Enter') loginUser()">
+                </div>
+                <button class="btn-auth" onclick="loginUser()">Sign In →</button>
+                <span class="back-link" onclick="goBack()">Use a different roll number</span>
+                <span class="back-link" onclick="resetPassword()" style="color: var(--coral); margin-top: 4px;">Forgot /
+                    Reset Password</span>
+            </div>
+
+            <!-- Step 2b: Signup (new user) -->
+            <div id="stepSignup" style="display:none;" class="step">
+                <div class="auth-title">Create account</div>
+                <p class="auth-sub">First time here? Set up your name and password to get started.</p>
+
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Choose a password (min 4 chars)">
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirm">Confirm Password</label>
+                    <input type="password" id="signupConfirm" placeholder="Confirm your password"
+                        onkeydown="if(event.key==='Enter') signupUser()">
+                </div>
+                <button class="btn-auth" onclick="signupUser()">Create Account →</button>
+                <span class="back-link" onclick="goBack()">Use a different roll number</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
