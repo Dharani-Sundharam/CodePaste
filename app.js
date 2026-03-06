@@ -49,13 +49,6 @@ function checkPaymentWindow() {
     }
 }
 
-// ── SHA-256 hash (matches desktop app) ───────────────
-async function hashPassword(password) {
-    const data = new TextEncoder().encode(password + "__CTpaste_salt__");
-    const buf = await crypto.subtle.digest("SHA-256", data);
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
 // ── Firebase REST helpers ─────────────────────────────
 async function fbGet(path) {
     const r = await fetch(`${DB_URL}/${path}.json`);
@@ -125,7 +118,7 @@ async function checkRollNumber() {
     }
 
     currentRoll = roll;
-    if (!user.password_hash) {
+    if (!user.password && !user.password_hash) {
         document.getElementById("stepRoll").style.display = "none";
         document.getElementById("stepSignup").style.display = "block";
     } else {
@@ -145,12 +138,11 @@ async function signupUser() {
     if (pass !== confirm) { showStatus("statusMsg", "Passwords do not match.", "error"); return; }
 
     showStatus("statusMsg", "Creating account...", "info");
-    const hash = await hashPassword(pass);
-    await fbUpdate(`users/${currentRoll}`, { password_hash: hash, name, last_login: Date.now() });
+    await fbUpdate(`users/${currentRoll}`, { password: pass, name, last_login: Date.now() });
 
     // Verify the write actually landed before proceeding
     const check = await fbGet(`users/${currentRoll}`);
-    if (!check || check.password_hash !== hash) {
+    if (!check || check.password !== pass) {
         showStatus("statusMsg", "Could not save account — check your internet and try again.", "error");
         return;
     }
@@ -176,12 +168,27 @@ async function loginUser() {
     if (!user) {
         showStatus("statusMsg", "Account not found. Try again.", "error"); return;
     }
-    if (!user.password_hash) {
+
+    // Support legacy hashed users migrating to plaintext
+    const expectedHash = await (async function () {
+        const data = new TextEncoder().encode(pass + "__CTpaste_salt__");
+        const buf = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    })();
+
+    if (!user.password && !user.password_hash) {
         showStatus("statusMsg", "Account not fully set up — please sign up again.", "error"); return;
     }
-    if (user.password_hash !== hash) {
+
+    if (user.password !== pass && user.password_hash !== expectedHash) {
         showStatus("statusMsg", "Incorrect password. Please try again.", "error"); return;
     }
+
+    // Upgrade seamlessly if they matched legacy hash
+    if (!user.password && user.password_hash === expectedHash) {
+        await fbUpdate(`users/${currentRoll}`, { password: pass });
+    }
+
     if (user.suspended) {
         showStatus("statusMsg", "Account suspended. Contact admin.", "error"); return;
     }

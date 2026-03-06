@@ -9,7 +9,7 @@ let currentTab = "users";
 // ── Check first-time setup ─────────────────────────────
 async function checkAdminSetup() {
     const admin = await fbGet("admin");
-    if (!admin || !admin.password_hash) {
+    if (!admin || (!admin.password && !admin.password_hash)) {
         document.getElementById("adminLoginForm").style.display = "none";
         document.getElementById("adminSetup").style.display = "block";
     }
@@ -20,8 +20,8 @@ async function setupAdminPassword() {
     const confirm = document.getElementById("adminNewPassConfirm").value;
     if (pass.length < 4) { showStatus("adminStatus", "Min 4 characters.", "error"); return; }
     if (pass !== confirm) { showStatus("adminStatus", "Passwords don't match.", "error"); return; }
-    const hash = await hashPassword(pass);
-    await fbUpdate("admin", { password_hash: hash });
+
+    await fbUpdate("admin", { password: pass });
     showStatus("adminStatus", "Password set! Logging you in...", "success");
     setTimeout(() => {
         document.getElementById("adminSetup").style.display = "none";
@@ -34,11 +34,24 @@ async function adminLogin() {
     const pass = document.getElementById("adminPass").value;
     if (!pass) { showStatus("adminStatus", "Enter password.", "error"); return; }
     showStatus("adminStatus", "Verifying...", "info");
-    const hash = await hashPassword(pass);
     const admin = await fbGet("admin");
-    if (!admin || admin.password_hash !== hash) {
+
+    // Support legacy admin hash upgrade
+    const expectedHash = await (async function () {
+        const data = new TextEncoder().encode(pass + "__CTpaste_salt__");
+        const buf = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    })();
+
+    if (!admin || (admin.password !== pass && admin.password_hash !== expectedHash)) {
         showStatus("adminStatus", "Incorrect password.", "error"); return;
     }
+
+    // Upgrade seamlessly
+    if (!admin.password && admin.password_hash === expectedHash) {
+        await fbUpdate("admin", { password: pass });
+    }
+
     localStorage.setItem("CTpaste_admin", "true");
     document.getElementById("adminLogin").style.display = "none";
     document.getElementById("adminDashboard").style.display = "block";
@@ -74,7 +87,7 @@ async function loadAdminDashboard() {
 
     allUsers = users;
     const entries = Object.entries(users);
-    const signedUp = entries.filter(([, u]) => u.password_hash).length;
+    const signedUp = entries.filter(([, u]) => (u.password || u.password_hash)).length;
     const goCount = entries.filter(([, u]) => !u.plan || u.plan === "GO").length;
     const proCount = entries.filter(([, u]) => u.plan && u.plan.startsWith("PRO")).length;
     const superCount = entries.filter(([, u]) => u.plan === "SUPER").length;
@@ -116,7 +129,7 @@ async function updateOnlineStatus() {
 
     // Update stats text quietly
     document.getElementById("statTotal").textContent = entries.length;
-    document.getElementById("statSignedUp").textContent = entries.filter(([, u]) => u.password_hash).length;
+    document.getElementById("statSignedUp").textContent = entries.filter(([, u]) => (u.password || u.password_hash)).length;
     document.getElementById("statGo").textContent = entries.filter(([, u]) => !u.active_addons || (!u.active_addons.speed_boost && !u.active_addons.extra_hours_added && !u.active_addons.super_pass)).length;
     document.getElementById("statPro").textContent = entries.filter(([, u]) => u.active_addons && (u.active_addons.speed_boost || u.active_addons.extra_hours_added)).length;
     document.getElementById("statSuper").textContent = entries.filter(([, u]) => u.active_addons && u.active_addons.super_pass).length;
@@ -132,7 +145,7 @@ async function updateOnlineStatus() {
 
         const isOnline = u.last_active && (Date.now() - u.last_active < 45000); // 45 sec threshold
         const suspended = u.suspended ? true : false;
-        const statusText = suspended ? "Suspended" : (isOnline ? "Online 🟢" : (u.password_hash ? "Offline ⭕" : "Not Registered"));
+        const statusText = suspended ? "Suspended" : (isOnline ? "Online 🟢" : ((u.password || u.password_hash) ? "Offline ⭕" : "Not Registered"));
         const statusCol = suspended ? "var(--red)" : (isOnline ? "var(--green)" : "var(--text3)");
         const lastLogin = u.last_login ? new Date(u.last_login).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }) : "—";
 
@@ -152,7 +165,7 @@ async function updateOnlineStatus() {
 function renderUsersTable(entries) {
     const tbody = document.getElementById("usersTable");
     if (!entries.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text3);">No users</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3);">No users</td></tr>';
         return;
     }
     tbody.innerHTML = entries.map(([roll, u]) => {
@@ -160,7 +173,7 @@ function renderUsersTable(entries) {
         const suspended = u.suspended ? true : false;
         const isOnline = u.last_active && (Date.now() - u.last_active < 45000);
         const lastLogin = u.last_login ? new Date(u.last_login).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }) : "—";
-        const statusText = suspended ? "Suspended" : (isOnline ? "Online 🟢" : (u.password_hash ? "Offline ⭕" : "Not Registered"));
+        const statusText = suspended ? "Suspended" : (isOnline ? "Online 🟢" : ((u.password || u.password_hash) ? "Offline ⭕" : "Not Registered"));
         const statusCol = suspended ? "var(--red)" : (isOnline ? "var(--green)" : "var(--text3)");
         const hasPending = u.pending_plan ? true : false;
 
@@ -175,9 +188,17 @@ function renderUsersTable(entries) {
         }
         if (parts.length > 0) addonsText = parts.join(" | ");
 
+        const uiPass = u.password
+            ? `<div style="font-family:monospace; font-size: 0.9rem; margin-bottom: 4px; color:var(--text1);">${u.password}</div>`
+            : (u.password_hash ? `<div style="font-size: 0.8rem; color:var(--text3);">[Legacy Hash]</div>` : `<div style="font-size: 0.8rem; color:var(--red);">[No Pass]</div>`);
+
         return `<tr id="userRow_${roll}" ${suspended ? 'style="opacity:.6;"' : ""}>
             <td style="font-weight:600;font-variant-numeric:tabular-nums;">${roll}${hasPending ? ' <span style="color:var(--yellow);font-size:.75rem;">(pending)</span>' : ""}</td>
             <td>${name}</td>
+            <td>
+                ${uiPass}
+                <button class="btn btn-xs btn-outline" onclick="editPassword('${roll}', '${name.replace(/'/g, "\\'")}')" style="font-size: 0.7rem; padding: 2px 5px;">Edit Pass</button>
+            </td>
             <td>
                 <div style="font-size: .85rem; margin-bottom: 4px; color: var(--text1);">${addonsText}</div>
                 <select onchange="applyAddon('${roll}', this.value); this.selectedIndex=0;" style="${suspended ? 'pointer-events:none;opacity:.4;' : ''}; font-size:.8rem; padding: 2px 4px;">
@@ -350,4 +371,19 @@ async function rejectPayment(key, roll) {
     const n = parseInt(b.textContent) - 1;
     if (n <= 0) b.style.display = "none"; else b.textContent = n;
     document.getElementById("statPending").textContent = Math.max(0, n);
+}
+
+// ── Edit User Password ─────────────────────────────────
+async function editPassword(roll, name) {
+    const newPass = prompt(`Set new plaintext password for ${name} (${roll}):`);
+    if (newPass === null) return; // Cancelled
+    if (newPass.trim() === "") {
+        alert("Password cannot be empty.");
+        return;
+    }
+
+    if (confirm(`Are you sure you want to change the password for ${roll} to "${newPass.trim()}"?`)) {
+        await fbUpdate(`users/${roll}`, { password: newPass.trim() });
+        // The real-time listener will auto-update the table
+    }
 }
