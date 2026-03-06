@@ -188,7 +188,7 @@
             document.getElementById("qrPanel").style.display = "block";
 
             // Generate UPI QR using API
-            const upi = "paytm.s181sy0@pty";
+            const upi = "paytm.s1ri7l9@pty";
             document.getElementById("upiId").textContent = upi;
             const upiData = encodeURIComponent(`upi://pay?pa=${upi}&pn=CTpaste&am=${amount}&cu=INR&tn=CTpaste+${plan}`);
             document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${upiData}&bgcolor=21262d&color=c9d1d9&margin=10`;
