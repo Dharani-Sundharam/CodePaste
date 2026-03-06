@@ -127,9 +127,12 @@
                     <p>Click or drag to upload payment screenshot</p>
                     <p style="font-size:.76rem; margin-top:4px;">JPG, PNG, WEBP supported</p>
                 </div>
-                <div style="margin-top:8px; text-align:right;">
-                    <span style="font-size:.8rem; cursor:pointer; color:var(--accent); text-decoration:underline;"
-                        onclick="openLightbox('assets/ref_img.png')">View Reference Screenshot</span>
+                <div style="margin-top:16px; text-align:center;">
+                    <p style="font-size:.85rem; color:var(--text2); margin-bottom:8px;">What we look for in the
+                        screenshot:</p>
+                    <img src="assets/ref_img.png" alt="Reference Screenshot"
+                        style="max-width:100%; border-radius:8px; border:2px solid var(--border); cursor:pointer;"
+                        onclick="openLightbox(this.src)">
                 </div>
                 <div id="uploadPreviewWrap" style="display:none; margin-top:14px;">
                     <img id="uploadPreview" src="" alt=""
