@@ -250,6 +250,25 @@
                         </p>
                     </div>
                 </div>
+
+                <!-- Android -->
+                <div class="card download-card">
+                    <div class="os-logo">
+                        <img src="assets/icon.png" alt="Android App"
+                            style="width: 48px; height: 48px; object-fit: contain;">
+                    </div>
+                    <h3>Android</h3>
+                    <p>Android 9.0+<br>Phone Sync App · .apk file</p>
+                    <div id="androidDownloadArea">
+                        <a href="#" id="androidDownloadBtn" class="btn btn-primary btn-sm" style="width:100%;"
+                            onclick="handleAndroidDownload(event)">
+                            Download .apk
+                        </a>
+                        <p id="androidLoginMsg" class="login-gate-msg" style="display:none;">
+                            Please <a href="auth.html">login</a> to download.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -272,6 +291,19 @@
                         <li>Phone sync included</li>
                     </ul>
                     <span class="btn btn-outline btn-sm" style="width:100%;">Default</span>
+                </div>
+
+                <div class="card pricing-card">
+                    <h3>Sync App</h3>
+                    <div class="pricing-price">&#8377;30 <span>/ week</span></div>
+                    <p class="pricing-desc">Phone Clipboard Sync</p>
+                    <ul class="pricing-features">
+                        <li>Send code directly from your phone</li>
+                        <li>Syncs instantly to PC via Firebase</li>
+                        <li>Requires Android 9.0+</li>
+                        <li>7-day unlimited pass</li>
+                    </ul>
+                    <a href="auth.html" class="btn btn-outline btn-sm" style="width:100%;">Get Sync App</a>
                 </div>
 
                 <div class="card pricing-card featured">
@@ -346,6 +378,20 @@
             link.click();
         }
 
+        function handleAndroidDownload(e) {
+            e.preventDefault();
+            const user = localStorage.getItem("CTpaste_user");
+            if (!user) {
+                document.getElementById("androidLoginMsg").style.display = "block";
+                document.getElementById("androidDownloadBtn").style.display = "none";
+                return;
+            }
+            const link = document.createElement("a");
+            link.href = "CTpaste_Android.apk";
+            link.download = "CTpaste_Android.apk";
+            link.click();
+        }
+
         // Show correct download button state on load
         window.addEventListener("load", () => {
             const user = localStorage.getItem("CTpaste_user");
@@ -358,6 +404,12 @@
                 if (linBtn) {
                     linBtn.textContent = "Login to Download";
                     linBtn.classList.replace("btn-primary", "btn-outline");
+                }
+
+                const andBtn = document.getElementById("androidDownloadBtn");
+                if (andBtn) {
+                    andBtn.textContent = "Login to Download";
+                    andBtn.classList.replace("btn-primary", "btn-outline");
                 }
             }
         });
