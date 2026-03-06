@@ -186,6 +186,11 @@ function renderUsersTable(entries) {
             if (addons.speed_boost) parts.push("Fast Speed");
             if (addons.extra_hours_added) parts.push(`+${addons.extra_hours_added} Hrs`);
         }
+
+        if (addons.sync_app_expiry && Date.now() < addons.sync_app_expiry) {
+            parts.push("Phone Sync");
+        }
+
         if (parts.length > 0) addonsText = parts.join(" | ");
 
         const uiPass = u.password
@@ -204,6 +209,7 @@ function renderUsersTable(entries) {
                 <select onchange="applyAddon('${roll}', this.value); this.selectedIndex=0;" style="${suspended ? 'pointer-events:none;opacity:.4;' : ''}; font-size:.8rem; padding: 2px 4px;">
                     <option value="" disabled selected>Give Add-On...</option>
                     <option value="PRO_SPEED">+ SPEED Boost</option>
+                    <option value="SYNC_APP">+ Phone Sync (7-Day)</option>
                     <option value="PRO_HOUR">+ 1 HOUR</option>
                     <option value="PRO_BOTH">+ Both (Speed + Hour)</option>
                     <option value="SUPER">SUPER Pass</option>
@@ -237,8 +243,11 @@ async function applyAddon(roll, addonAction) {
 
     if (addonAction === "RESET") {
         active_addons = { speed_boost: false, extra_hours_added: 0, super_pass: false };
+        active_addons.sync_app_expiry = null;
     } else if (addonAction === "PRO_SPEED") {
         active_addons.speed_boost = true;
+    } else if (addonAction === "SYNC_APP") {
+        active_addons.sync_app_expiry = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days from now
     } else if (addonAction === "PRO_HOUR") {
         active_addons.extra_hours_added = (active_addons.extra_hours_added || 0) + 1;
     } else if (addonAction === "PRO_BOTH") {

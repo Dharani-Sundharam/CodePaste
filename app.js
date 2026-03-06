@@ -254,12 +254,19 @@ async function loadDashboard(user) {
     let badgeClass = "go";
     let planLabel = "GO (Base)";
 
+    // Check Phone Sync Expiration
+    let hasSync = false;
+    if (addons.sync_app_expiry && Date.now() < addons.sync_app_expiry) {
+        hasSync = true;
+    }
+
     if (addons.super_pass) {
         speed = "Medium";
         hrs = 3;
         badgeText = "SUPER";
         badgeClass = "super";
         planLabel = "SUPER Pass";
+        hasSync = true; // Super pass gets phone sync for free
     } else {
         if (addons.speed_boost) speed = "Fast";
         if (addons.extra_hours_added) hrs += addons.extra_hours_added;
@@ -287,6 +294,7 @@ async function loadDashboard(user) {
     document.getElementById("planDetails").innerHTML = `
         <p><strong>Speed:</strong> ${speed}</p>
         <p><strong>Session length:</strong> ${hrs} hour${hrs > 1 ? "s" : ""}</p>
+        <p><strong>Phone Sync:</strong> <strong style="color:${hasSync ? '#43e97b' : '#ff6b81'}">${hasSync ? 'Active (7-Day Pass)' : 'Expired / Not Purchased'}</strong></p>
         <p><strong>Cooldown:</strong> 2 hours after session ends</p>
     `;
 
