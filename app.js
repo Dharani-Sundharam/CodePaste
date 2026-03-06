@@ -6,7 +6,7 @@
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyDCwXGlANMZKKcGZudG8r7M72Uz-jNknkI",
     projectId: "codepaste-sync",
-    databaseURL: "https://codepaste-sync-default-rtdb.firebaseio.com",
+    databaseURL: "https://codepaste-sync-default-rtdb.asia-southeast1.firebasedatabase.app",
     storageBucket: "codepaste-sync.firebasestorage.app"
 };
 
