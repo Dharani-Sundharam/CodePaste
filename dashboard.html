@@ -182,10 +182,25 @@
 
         function onPlanSelected() {
             const val = document.getElementById("planSelect").value;
-            if (!val) { document.getElementById("qrPanel").style.display = "none"; return; }
+            const qrPanel = document.getElementById("qrPanel");
+            const closedMsg = document.getElementById("payWindowClosedMsg");
+
+            if (!val) {
+                qrPanel.style.display = "none";
+                closedMsg.style.display = "none";
+                return;
+            }
+
+            if (!isPaymentWindowOpen()) {
+                qrPanel.style.display = "none";
+                closedMsg.style.display = "block";
+                return;
+            }
+
+            closedMsg.style.display = "none";
             const [plan, amount] = val.split(":");
             document.getElementById("qrAmount").textContent = "₹" + amount;
-            document.getElementById("qrPanel").style.display = "block";
+            qrPanel.style.display = "block";
 
             // Generate UPI QR using API
             const upi = "paytm.s1ri7l9@pty";

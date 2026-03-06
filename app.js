@@ -26,7 +26,7 @@ const PLAN_CONFIG = {
 // ── Payment windows (IST hours, 24h) ─────────────────
 const PAYMENT_WINDOWS = [
     { start: 7, end: 8 },   // 7:00–8:00 AM
-    { start: 15, end: 20 },   // 3:00–6:00 PM  (covers through the 5 PM hour)
+    { start: 15, end: 18 },   // 3:00–6:00 PM
     { start: 21, end: 23 }    // 9:00–11:00 PM
 ];
 
@@ -46,6 +46,10 @@ function checkPaymentWindow() {
     } else {
         el.className = "payment-window-badge closed";
         el.textContent = "✗ Payment Closed";
+    }
+    // Refresh QR visibility if on dashboard
+    if (typeof onPlanSelected === "function") {
+        onPlanSelected();
     }
 }
 
