@@ -171,6 +171,33 @@
                     <li>→ Your session timer continues even if you close and reopen the app</li>
                 </ul>
             </div>
+
+            <!-- Linux Installation Guide -->
+            <div
+                style="margin-top: 32px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 24px 28px;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: #fff;">🐧 Linux Installation Guide</h3>
+                <p style="color: var(--text2); font-size: 0.9rem; margin-bottom: 16px;">CTpaste provides a standalone
+                    `.deb` package containing all dependencies for Ubuntu, Debian, and Linux Mint.</p>
+                <ol style="color: var(--text2); font-size: 0.9rem; line-height: 1.8; margin-left: 20px;">
+                    <li>Download the <code>ctpaste_1.0_amd64.deb</code> file from the Download section below.</li>
+                    <li>Open your terminal in the directory where the file was downloaded.</li>
+                    <li>Run the following command to install the package: <br>
+                        <code
+                            style="background: var(--bg2); padding: 4px 8px; border-radius: 4px; display: inline-block; margin: 8px 0; color: #fff;">sudo dpkg -i ctpaste_1.0_amd64.deb</code>
+                    </li>
+                    <li><strong>Important:</strong> CTpaste requires <code>xdotool</code> to type characters into your
+                        active window. Install it by running: <br>
+                        <code
+                            style="background: var(--bg2); padding: 4px 8px; border-radius: 4px; display: inline-block; margin: 8px 0; color: #fff;">sudo apt install xdotool</code>
+                    </li>
+                    <li>Launch CTpaste from your Linux Application Menu!</li>
+                </ol>
+                <p style="color: #ffb74d; font-size: 0.85rem; margin-top: 16px; margin-bottom: 0;">
+                    <em>Note: CTpaste uses <code>xdotool</code> and requires an <strong>X11</strong> windowing
+                        environment. If you are on Wayland (default on newer Ubuntu), global hotkeys and programmatic
+                        typing may be blocked by your compositor's security settings.</em>
+                </p>
+            </div>
         </div>
     </section>
 
@@ -225,8 +252,16 @@
                         </svg>
                     </div>
                     <h3>Linux</h3>
-                    <p>Ubuntu / Debian — Coming Soon<br>Build in progress</p>
-                    <span class="btn btn-disabled btn-sm" style="width:100%;">Coming Soon</span>
+                    <p>Ubuntu / Debian — 64-bit<br>~56 MB · .deb package</p>
+                    <div id="linuxDownloadArea">
+                        <a href="#" id="linuxDownloadBtn" class="btn btn-primary btn-sm" style="width:100%;"
+                            onclick="handleLinuxDownload(event)">
+                            Download .deb
+                        </a>
+                        <p id="linuxLoginMsg" class="login-gate-msg" style="display:none;">
+                            Please <a href="auth.html">login</a> to download.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -310,13 +345,33 @@
             link.click();
         }
 
+        function handleLinuxDownload(e) {
+            e.preventDefault();
+            const user = localStorage.getItem("CTpaste_user");
+            if (!user) {
+                document.getElementById("linuxLoginMsg").style.display = "block";
+                document.getElementById("linuxDownloadBtn").style.display = "none";
+                return;
+            }
+            const link = document.createElement("a");
+            link.href = "ctpaste_1.0_amd64.deb";
+            link.download = "ctpaste_1.0_amd64.deb";
+            link.click();
+        }
+
         // Show correct download button state on load
         window.addEventListener("load", () => {
             const user = localStorage.getItem("CTpaste_user");
             if (!user) {
-                const btn = document.getElementById("winDownloadBtn");
-                btn.textContent = "Login to Download";
-                btn.classList.replace("btn-primary", "btn-outline");
+                const winBtn = document.getElementById("winDownloadBtn");
+                winBtn.textContent = "Login to Download";
+                winBtn.classList.replace("btn-primary", "btn-outline");
+
+                const linBtn = document.getElementById("linuxDownloadBtn");
+                if (linBtn) {
+                    linBtn.textContent = "Login to Download";
+                    linBtn.classList.replace("btn-primary", "btn-outline");
+                }
             }
         });
     </script>
