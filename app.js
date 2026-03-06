@@ -5,9 +5,9 @@
 
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyDCwXGlANMZKKcGZudG8r7M72Uz-jNknkI",
-    projectId: "CTpaste-sync",
-    databaseURL: "https://CTpaste-sync-default-rtdb.asia-southeast1.firebasedatabase.app",
-    storageBucket: "CTpaste-sync.firebasestorage.app"
+    projectId: "codepaste-sync",
+    databaseURL: "https://codepaste-sync-default-rtdb.firebaseio.com",
+    storageBucket: "codepaste-sync.firebasestorage.app"
 };
 
 const DB_URL = FIREBASE_CONFIG.databaseURL;
@@ -157,7 +157,6 @@ async function loginUser() {
     if (!pass) { showStatus("statusMsg", "Enter your password.", "error"); return; }
     showStatus("statusMsg", "Verifying...", "info");
 
-    const hash = await hashPassword(pass);
     let user;
     try {
         user = await fbGet(`users/${currentRoll}`);
@@ -170,11 +169,14 @@ async function loginUser() {
     }
 
     // Support legacy hashed users migrating to plaintext
-    const expectedHash = await (async function () {
-        const data = new TextEncoder().encode(pass + "__CTpaste_salt__");
-        const buf = await crypto.subtle.digest("SHA-256", data);
-        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-    })();
+    let expectedHash = null;
+    try {
+        if (window.crypto && crypto.subtle) {
+            const data = new TextEncoder().encode(pass + "__CTpaste_salt__");
+            const buf = await crypto.subtle.digest("SHA-256", data);
+            expectedHash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+    } catch (e) { console.warn("Legacy hash generation skipped due to browser limits."); }
 
     if (!user.password && !user.password_hash) {
         showStatus("statusMsg", "Account not fully set up — please sign up again.", "error"); return;
