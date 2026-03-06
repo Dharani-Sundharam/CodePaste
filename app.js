@@ -121,6 +121,8 @@ async function checkRollNumber() {
     if (!user.password && !user.password_hash) {
         document.getElementById("stepRoll").style.display = "none";
         document.getElementById("stepSignup").style.display = "block";
+        document.getElementById("signupName").closest(".form-group").style.display = "block";
+        document.getElementById("stepSignup").querySelector("p.auth-sub").textContent = "First time here? Set up your name and password to get started.";
     } else {
         document.getElementById("stepRoll").style.display = "none";
         document.getElementById("stepLogin").style.display = "block";
@@ -129,15 +131,23 @@ async function checkRollNumber() {
 }
 
 async function signupUser() {
-    const name = document.getElementById("signupName").value.trim();
+    let name = document.getElementById("signupName").value.trim();
     const pass = document.getElementById("signupPassword").value;
     const confirm = document.getElementById("signupConfirm").value;
 
-    if (!name) { showStatus("statusMsg", "Enter your name.", "error"); return; }
+    const isReset = document.getElementById("signupName").closest(".form-group").style.display === "none";
+
+    if (!isReset && !name) { showStatus("statusMsg", "Enter your name.", "error"); return; }
     if (pass.length < 4) { showStatus("statusMsg", "Password must be at least 4 chars.", "error"); return; }
     if (pass !== confirm) { showStatus("statusMsg", "Passwords do not match.", "error"); return; }
 
-    showStatus("statusMsg", "Creating account...", "info");
+    showStatus("statusMsg", isReset ? "Resetting password..." : "Creating account...", "info");
+
+    if (isReset) {
+        const u = await fbGet(`users/${currentRoll}`);
+        name = (u && u.name) ? u.name : currentRoll;
+    }
+
     await fbUpdate(`users/${currentRoll}`, { password: pass, name, last_login: Date.now() });
 
     // Verify the write actually landed before proceeding
@@ -148,7 +158,7 @@ async function signupUser() {
     }
 
     setLoggedInUser(currentRoll, name, "GO");
-    showStatus("statusMsg", "Account created! Redirecting...", "success");
+    showStatus("statusMsg", isReset ? "Password reset successful! Redirecting..." : "Account created! Redirecting...", "success");
     setTimeout(() => { window.location.href = "dashboard.html"; }, 900);
 }
 
@@ -213,8 +223,9 @@ function resetPassword() {
     // Show the signup form so the user can overwrite their stored hash
     document.getElementById("stepLogin").style.display = "none";
     document.getElementById("stepSignup").style.display = "block";
+    document.getElementById("signupName").closest(".form-group").style.display = "none";
     document.getElementById("stepSignup").querySelector("p.auth-sub").textContent =
-        "Reset your password. Your name will be kept as-is.";
+        "Reset your password. Your new password will be saved instantly.";
     clearStatus("statusMsg");
 }
 
