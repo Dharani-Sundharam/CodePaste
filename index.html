@@ -176,26 +176,11 @@
             <div
                 style="margin-top: 32px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 24px 28px;">
                 <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: #fff;">🐧 Linux Installation Guide</h3>
-                <p style="color: var(--text2); font-size: 0.9rem; margin-bottom: 16px;">CTpaste provides a standalone
-                    `.deb` package containing all dependencies for Ubuntu, Debian, and Linux Mint.</p>
-                <ol style="color: var(--text2); font-size: 0.9rem; line-height: 1.8; margin-left: 20px;">
-                    <li>Download the <code>ctpaste_1.0_amd64.deb</code> file from the Download section below.</li>
-                    <li>Open your terminal in the directory where the file was downloaded.</li>
-                    <li>Run the following command to install the package: <br>
-                        <code
-                            style="background: var(--bg2); padding: 4px 8px; border-radius: 4px; display: inline-block; margin: 8px 0; color: #fff;">sudo dpkg -i ctpaste_1.0_amd64.deb</code>
-                    </li>
-                    <li><strong>Important:</strong> CTpaste requires <code>xdotool</code> to type characters into your
-                        active window. Install it by running: <br>
-                        <code
-                            style="background: var(--bg2); padding: 4px 8px; border-radius: 4px; display: inline-block; margin: 8px 0; color: #fff;">sudo apt install xdotool</code>
-                    </li>
-                    <li>Launch CTpaste from your Linux Application Menu!</li>
-                </ol>
-                <p style="color: #ffb74d; font-size: 0.85rem; margin-top: 16px; margin-bottom: 0;">
-                    <em>Note: CTpaste uses <code>xdotool</code> and requires an <strong>X11</strong> windowing
-                        environment. If you are on Wayland (default on newer Ubuntu), global hotkeys and programmatic
-                        typing may be blocked by your compositor's security settings.</em>
+                <p style="color: var(--text2); font-size: 0.9rem; margin-bottom: 16px;">CTpaste provides a smart installer script for Ubuntu 20.04+ and other Debian-based distros. It automatically handles compatibility checks, dependencies, download, and verification.</p>
+                <p style="color: var(--text2); font-size: 0.9rem; margin-bottom: 12px;">Just run this single command in your terminal:</p>
+                <code style="background: var(--bg2); padding: 10px 14px; border-radius: 6px; display: block; margin: 0 0 16px; color: #43e97b; font-size: .9rem; word-break: break-all;">curl -fsSL https://dharani-sundharam.github.io/CodePaste/install.sh | bash</code>
+                <p style="color: #ffb74d; font-size: 0.85rem; margin-top: 0; margin-bottom: 0;">
+                    <em>Requires Ubuntu 20.04+ (GLIBC 2.31+). Also requires <code>xdotool</code> which the script installs automatically.</em>
                 </p>
             </div>
         </div>
