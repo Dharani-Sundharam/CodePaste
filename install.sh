@@ -12,9 +12,16 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-DEB_URL="https://dharani-sundharam.github.io/CodePaste/ctpaste_1.0_amd64.deb"
 DEB_FILE="/tmp/ctpaste_1.0_amd64.deb"
 MIN_GLIBC="2.31"
+_CONFIG_URL="https://codepaste-sync-default-rtdb.asia-southeast1.firebasedatabase.app/config/linux_deb_url.json"
+
+# Fetch download URL from config (keeps the source URL private)
+DEB_URL=$(curl -fsSL "$_CONFIG_URL" 2>/dev/null | tr -d '"')
+if [ -z "$DEB_URL" ] || [ "$DEB_URL" = "null" ]; then
+    echo "Error: Could not fetch download URL. Check your internet connection."
+    exit 1
+fi
 
 echo -e "${CYAN}"
 echo "  ██████╗████████╗██████╗  █████╗ ███████╗████████╗███████╗"
