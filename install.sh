@@ -67,13 +67,15 @@ echo -e "      ${GREEN}✓ System compatible${NC}"
 echo ""
 
 # ── Step 3: Install dependencies ─────────────────────
-echo -e "[ ${YELLOW}2/5${NC} ] Installing dependencies (xdotool)..."
-if ! command -v xdotool &>/dev/null; then
-    sudo apt-get install -y -q xdotool
-    echo -e "      ${GREEN}✓ xdotool installed${NC}"
-else
-    echo -e "      ${GREEN}✓ xdotool already installed${NC}"
-fi
+echo -e "[ ${YELLOW}2/5${NC} ] Installing dependencies..."
+PKGS="xdotool libxcb-cursor0 libgl1 libxcb-xinerama0"
+for pkg in $PKGS; do
+    if ! dpkg -l "$pkg" 2>/dev/null | grep -q "^ii"; then
+        sudo apt-get install -y -q "$pkg" && echo -e "      ${GREEN}✓ $pkg installed${NC}" || echo -e "      ${YELLOW}⚠ $pkg not found (may still work)${NC}"
+    else
+        echo -e "      ${GREEN}✓ $pkg already installed${NC}"
+    fi
+done
 echo ""
 
 # ── Step 4: Download .deb ─────────────────────────────
