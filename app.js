@@ -23,35 +23,7 @@ const PLAN_CONFIG = {
     "SUPER": { speed: "Medium", sessionHrs: 3, cooldownHrs: 3, label: "SUPER" }
 };
 
-// ── Payment windows (IST hours, 24h) ─────────────────
-const PAYMENT_WINDOWS = [
-    { start: 7, end: 8 },   // 7:00–8:00 AM
-    { start: 15, end: 18 },   // 3:00–6:00 PM
-    { start: 21, end: 23 }    // 9:00–11:00 PM
-];
 
-function isPaymentWindowOpen() {
-    // Use device local time directly — all users are on IST devices
-    const now = new Date();
-    const h = now.getHours() + now.getMinutes() / 60;
-    return PAYMENT_WINDOWS.some(w => h >= w.start && h < w.end);
-}
-
-function checkPaymentWindow() {
-    const el = document.getElementById("paymentWindow");
-    if (!el) return;
-    if (isPaymentWindowOpen()) {
-        el.className = "payment-window-badge open";
-        el.textContent = "✓ Payment Window Open";
-    } else {
-        el.className = "payment-window-badge closed";
-        el.textContent = "✗ Payment Closed";
-    }
-    // Refresh QR visibility if on dashboard
-    if (typeof onPlanSelected === "function") {
-        onPlanSelected();
-    }
-}
 
 // ── Firebase REST helpers ─────────────────────────────
 async function fbGet(path) {

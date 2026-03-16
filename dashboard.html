@@ -78,17 +78,9 @@
 
         <!-- Payment Section -->
         <div class="card" id="paymentSection" style="margin-bottom:24px;">
-            <div
-                style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+            <div style="margin-bottom:16px;">
                 <h3 style="font-size:.95rem; color:var(--text2);">Upgrade Plan — Pay via UPI</h3>
-                <span id="paymentWindow" class="payment-window-badge closed">Loading...</span>
             </div>
-
-            <p style="font-size:.83rem; color:var(--text2); margin-bottom:16px;">
-                Payment windows: <strong style="color:var(--text);">7:00–8:00 AM</strong> &nbsp;·&nbsp;
-                <strong style="color:var(--text);">3:00–6:00 PM</strong> &nbsp;·&nbsp;
-                <strong style="color:var(--text);">9:00–11:00 PM</strong>
-            </p>
 
             <!-- Plan selector -->
             <div class="form-group">
@@ -141,9 +133,7 @@
                     <p id="uploadFileName" style="font-size:.8rem; color:var(--text2); margin-top:6px;"></p>
                 </div>
 
-                <div id="payWindowClosedMsg" class="status-msg warn" style="display:none; margin-top:14px;">
-                    Payment window is currently closed. Come back during 7–8 AM, 3–6 PM, or 9–11 PM.
-                </div>
+
 
                 <button id="submitPaymentBtn" class="btn btn-primary mt-16" onclick="submitPayment()"
                     style="width:100%;" disabled>
@@ -159,8 +149,6 @@
             const user = getLoggedInUser();
             if (!user) { window.location.href = "auth.html"; return; }
             loadDashboard(user);
-            checkPaymentWindow();
-            setInterval(checkPaymentWindow, 60000);
         })();
 
         // ── WhatsApp notification config ──────────────────────
@@ -203,21 +191,12 @@
         function onPlanSelected() {
             const val = document.getElementById("planSelect").value;
             const qrPanel = document.getElementById("qrPanel");
-            const closedMsg = document.getElementById("payWindowClosedMsg");
 
             if (!val) {
                 qrPanel.style.display = "none";
-                closedMsg.style.display = "none";
                 return;
             }
 
-            if (!isPaymentWindowOpen()) {
-                qrPanel.style.display = "none";
-                closedMsg.style.display = "block";
-                return;
-            }
-
-            closedMsg.style.display = "none";
             const [plan, amount] = val.split(":");
             document.getElementById("qrAmount").textContent = "₹" + amount;
             qrPanel.style.display = "block";
@@ -246,11 +225,6 @@
         async function submitPayment() {
             const user = getLoggedInUser();
             if (!user || !selectedFile) return;
-
-            if (!isPaymentWindowOpen()) {
-                document.getElementById("payWindowClosedMsg").style.display = "block";
-                return;
-            }
 
             const planVal = document.getElementById("planSelect").value;
             const [plan, amount] = planVal.split(":");
