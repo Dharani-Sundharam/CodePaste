@@ -163,6 +163,19 @@
             setInterval(checkPaymentWindow, 60000);
         })();
 
+        // ── WhatsApp notification config ──────────────────────
+        const WHATSAPP_PHONE = "+919626262428";
+        const WHATSAPP_APIKEY = "4667147";
+
+        function notifyWhatsApp(roll, name, plan, amount) {
+            const msg = encodeURIComponent(
+                `CTpaste Payment Alert!%0ARoll: ${roll}%0AName: ${name}%0APlan: ${plan}%0AAmount: Rs.${amount}%0ATime: ${new Date().toLocaleString('en-IN')}`
+            );
+            // Fire-and-forget — don't await, don't block user
+            fetch(`https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${msg}&apikey=${WHATSAPP_APIKEY}`)
+                .catch(() => {}); // Silently ignore any network error
+        }
+
         let selectedFile = null;
 
         function compressImageToBase64(file, maxW = 600, qual = 0.6) {
@@ -272,6 +285,9 @@
                 document.getElementById("pendingPlanName").textContent = plan;
                 document.getElementById("pendingNotice").style.display = "block";
                 document.getElementById("paymentSection").style.display = "none";
+
+                // Notify admin via WhatsApp (non-blocking)
+                notifyWhatsApp(user.rollNumber, user.name, plan, amount);
             } catch (err) {
                 showStatus("statusMsg", "Upload failed: " + err.message, "error");
                 btn.disabled = false;

@@ -1,10 +1,29 @@
 /* ═══════════════════════════════════════════════════════
-   CTpaste — admin.js  v2
+   CTpaste — admin.js  v3
    Admin panel: users, suspend, payment queue approval
+   + Session persistence across refresh
+   + Real-time Firebase SSE listeners (no more polling)
    ═══════════════════════════════════════════════════════ */
 
 let allUsers = {};
 let currentTab = "users";
+
+// SSE streams
+let usersStream = null;
+let paymentsStream = null;
+
+// ── Page startup ───────────────────────────────────────
+function adminStartup() {
+    if (localStorage.getItem("CTpaste_admin") === "true") {
+        // Already logged in — skip login screen
+        document.getElementById("adminLogin").style.display = "none";
+        document.getElementById("adminDashboard").style.display = "block";
+        loadAdminDashboard();
+        startRealTimeListeners();
+    } else {
+        checkAdminSetup();
+    }
+}
 
 // ── Check first-time setup ─────────────────────────────
 async function checkAdminSetup() {
@@ -56,16 +75,67 @@ async function adminLogin() {
     document.getElementById("adminLogin").style.display = "none";
     document.getElementById("adminDashboard").style.display = "block";
     loadAdminDashboard();
-
-    // Start real-time background updates for user statuses
-    if (!window.statusInterval) {
-        window.statusInterval = setInterval(updateOnlineStatus, 8000);
-    }
+    startRealTimeListeners();
 }
 
 function adminLogout() {
+    stopRealTimeListeners();
     localStorage.removeItem("CTpaste_admin");
     window.location.reload();
+}
+
+// ── Real-time Firebase SSE Listeners ──────────────────
+function startRealTimeListeners() {
+    const base = DB_URL;
+
+    // --- Users stream ---
+    if (usersStream) usersStream.close();
+    usersStream = new EventSource(`${base}/users.json?stream=true`);
+    usersStream.addEventListener("put", () => {
+        loadAdminDashboard();
+    });
+    usersStream.addEventListener("patch", () => {
+        loadAdminDashboard();
+    });
+    usersStream.onerror = () => {
+        // Silently ignore — browser will auto-reconnect
+    };
+
+    // --- Payments stream ---
+    if (paymentsStream) paymentsStream.close();
+    paymentsStream = new EventSource(`${base}/payment_requests.json?stream=true`);
+    paymentsStream.addEventListener("put", (e) => {
+        _handlePaymentStreamEvent(e);
+    });
+    paymentsStream.addEventListener("patch", (e) => {
+        _handlePaymentStreamEvent(e);
+    });
+    paymentsStream.onerror = () => {
+        // Silently ignore — browser will auto-reconnect
+    };
+
+    // Show live indicator
+    const liveEl = document.getElementById("liveIndicator");
+    if (liveEl) liveEl.style.display = "inline-block";
+}
+
+function _handlePaymentStreamEvent(e) {
+    try {
+        const payload = JSON.parse(e.data);
+        // Only react to actual new data (not null/keepalive)
+        if (payload && payload.data !== null) {
+            // Reload the full dashboard to keep stats + table in sync
+            loadAdminDashboard();
+        }
+    } catch (_) { /* ignore parse errors */ }
+}
+
+function stopRealTimeListeners() {
+    if (usersStream) { usersStream.close(); usersStream = null; }
+    if (paymentsStream) { paymentsStream.close(); paymentsStream = null; }
+    // Hide live indicator
+    const liveEl = document.getElementById("liveIndicator");
+    if (liveEl) liveEl.style.display = "none";
 }
 
 // ── Tab switching ──────────────────────────────────────
@@ -116,49 +186,6 @@ async function loadAdminDashboard() {
 
     renderUsersTable(entries);
     renderPaymentQueue(pendingPayments, payments ? payments : {});
-}
-
-// ── Dynamic Online Status Update ───────────────────────
-async function updateOnlineStatus() {
-    if (currentTab !== "users") return;
-    const users = await fbGet("users");
-    if (!users) return;
-
-    allUsers = users;
-    const entries = Object.entries(users);
-
-    // Update stats text quietly
-    document.getElementById("statTotal").textContent = entries.length;
-    document.getElementById("statSignedUp").textContent = entries.filter(([, u]) => (u.password || u.password_hash)).length;
-    document.getElementById("statGo").textContent = entries.filter(([, u]) => !u.active_addons || (!u.active_addons.speed_boost && !u.active_addons.extra_hours_added && !u.active_addons.super_pass)).length;
-    document.getElementById("statPro").textContent = entries.filter(([, u]) => u.active_addons && (u.active_addons.speed_boost || u.active_addons.extra_hours_added)).length;
-    document.getElementById("statSuper").textContent = entries.filter(([, u]) => u.active_addons && u.active_addons.super_pass).length;
-    document.getElementById("statSuspended").textContent = entries.filter(([, u]) => u.suspended).length;
-
-    // Update row texts selectively
-    entries.forEach(([roll, u]) => {
-        const row = document.getElementById(`userRow_${roll}`);
-        if (!row) {
-            renderUsersTable(entries); // A new user signed up, rebuild full table
-            return;
-        }
-
-        const isOnline = u.last_active && (Date.now() - u.last_active < 45000); // 45 sec threshold
-        const suspended = u.suspended ? true : false;
-        const statusText = suspended ? "Suspended" : (isOnline ? "Online 🟢" : ((u.password || u.password_hash) ? "Offline ⭕" : "Not Registered"));
-        const statusCol = suspended ? "var(--red)" : (isOnline ? "var(--green)" : "var(--text3)");
-        const lastLogin = u.last_login ? new Date(u.last_login).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }) : "—";
-
-        const statusTd = document.getElementById(`status_${roll}`);
-        const loginTd = document.getElementById(`lastLogin_${roll}`);
-        if (statusTd) {
-            statusTd.innerHTML = statusText;
-            statusTd.style.color = statusCol;
-        }
-        if (loginTd) {
-            loginTd.innerHTML = lastLogin;
-        }
-    });
 }
 
 // ── Render users table ─────────────────────────────────
@@ -222,9 +249,9 @@ function renderUsersTable(entries) {
                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
                     <button class="btn btn-xs btn-outline" onclick="resetSession('${roll}')">Reset Session</button>
                     ${suspended
-                ? `<button class="btn btn-xs btn-green" onclick="unsuspendUser('${roll}')">Unsuspend</button>`
-                : `<button class="btn btn-xs btn-red"   onclick="suspendUser('${roll}')">Suspend</button>`
-            }
+            ? `<button class="btn btn-xs btn-green" onclick="unsuspendUser('${roll}')">Unsuspend</button>`
+            : `<button class="btn btn-xs btn-red"   onclick="suspendUser('${roll}')">Suspend</button>`
+        }
                 </div>
             </td>
         </tr>`;
@@ -357,7 +384,6 @@ async function approvePayment(key, roll, plan) {
     if (card) { card.style.opacity = "0"; card.style.transition = "opacity .3s"; setTimeout(() => card.remove(), 350); }
 
     // Update stats
-    // We recreate stats by recounting active addons instead of plan plan keys
     document.getElementById("statPro").textContent = Object.values(allUsers).filter(u => u.active_addons && (u.active_addons.speed_boost || u.active_addons.extra_hours_added)).length;
     document.getElementById("statSuper").textContent = Object.values(allUsers).filter(u => u.active_addons && u.active_addons.super_pass).length;
 
@@ -393,6 +419,5 @@ async function editPassword(roll, name) {
 
     if (confirm(`Are you sure you want to change the password for ${roll} to "${newPass.trim()}"?`)) {
         await fbUpdate(`users/${roll}`, { password: newPass.trim() });
-        // The real-time listener will auto-update the table
     }
 }

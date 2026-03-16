@@ -98,6 +98,7 @@
                 <button class="admin-tab active" id="tab-users" onclick="switchTab('users')">Users</button>
                 <button class="admin-tab" id="tab-payments" onclick="switchTab('payments')">
                     Payment Queue <span id="paymentNotifBadge" class="notif-badge" style="display:none;">0</span>
+                    <span id="liveIndicator" title="Live updates active" style="display:none; width:8px; height:8px; background:var(--green,#43e97b); border-radius:50%; display:inline-block; margin-left:5px; animation:livepulse 1.5s infinite;"></span>
                 </button>
             </div>
 
@@ -138,10 +139,16 @@
         </div>
     </div>
 
+    <style>
+        @keyframes livepulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .4; transform: scale(.7); }
+        }
+    </style>
     <script src="app.js"></script>
     <script src="admin.js"></script>
     <script>
-        (function () { checkAdminSetup(); })();
+        (function () { adminStartup(); })();
         function openLightbox(src) {
             document.getElementById("lightboxImg").src = src;
             document.getElementById("imgLightbox").classList.add("open");
