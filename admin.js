@@ -158,9 +158,9 @@ async function loadAdminDashboard() {
     allUsers = users;
     const entries = Object.entries(users);
     const signedUp = entries.filter(([, u]) => (u.password || u.password_hash)).length;
-    const goCount = entries.filter(([, u]) => !u.plan || u.plan === "GO").length;
-    const proCount = entries.filter(([, u]) => u.plan && u.plan.startsWith("PRO")).length;
-    const superCount = entries.filter(([, u]) => u.plan === "SUPER").length;
+    const superCount = entries.filter(([, u]) => u.active_addons && u.active_addons.super_pass).length;
+    const proCount = entries.filter(([, u]) => u.active_addons && !u.active_addons.super_pass && (u.active_addons.speed_boost || u.active_addons.extra_hours_added)).length;
+    const goCount = entries.filter(([, u]) => !u.active_addons || (!u.active_addons.speed_boost && !u.active_addons.extra_hours_added && !u.active_addons.super_pass)).length;
     const suspended = entries.filter(([, u]) => u.suspended).length;
 
     const pendingPayments = payments
