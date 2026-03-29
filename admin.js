@@ -14,15 +14,7 @@ let paymentsStream = null;
 
 // ── Page startup ───────────────────────────────────────
 function adminStartup() {
-    if (localStorage.getItem("CTpaste_admin") === "true") {
-        // Already logged in — skip login screen
-        document.getElementById("adminLogin").style.display = "none";
-        document.getElementById("adminDashboard").style.display = "block";
-        loadAdminDashboard();
-        startRealTimeListeners();
-    } else {
-        checkAdminSetup();
-    }
+    checkAdminSetup();
 }
 
 // ── Check first-time setup ─────────────────────────────
@@ -71,7 +63,6 @@ async function adminLogin() {
         await fbUpdate("admin", { password: pass });
     }
 
-    localStorage.setItem("CTpaste_admin", "true");
     document.getElementById("adminLogin").style.display = "none";
     document.getElementById("adminDashboard").style.display = "block";
     loadAdminDashboard();
@@ -80,7 +71,6 @@ async function adminLogin() {
 
 function adminLogout() {
     stopRealTimeListeners();
-    localStorage.removeItem("CTpaste_admin");
     window.location.reload();
 }
 
@@ -419,5 +409,16 @@ async function editPassword(roll, name) {
 
     if (confirm(`Are you sure you want to change the password for ${roll} to "${newPass.trim()}"?`)) {
         await fbUpdate(`users/${roll}`, { password: newPass.trim() });
+    }
+}
+
+// ── Logout All Devices ────────────────────────────────
+async function logoutAllDevices() {
+    if (!confirm("Are you sure you want to clear cache and log out all users from all devices?")) return;
+    try {
+        await fbSet("sessions", null);
+        alert("Cache cleared and all users have been logged out.");
+    } catch (e) {
+        alert("Failed to clear sessions: " + e.message);
     }
 }

@@ -58,7 +58,10 @@
         <div class="admin-wrap">
             <div class="dash-header">
                 <h1 style="color:var(--accent);">Admin Panel</h1>
-                <button class="btn btn-outline btn-sm" onclick="adminLogout()">Logout</button>
+                <div>
+                    <button class="btn btn-outline btn-sm" style="color:var(--red); border-color:var(--red); margin-right:8px;" onclick="logoutAllDevices()">Log Out All Devices</button>
+                    <button class="btn btn-outline btn-sm" onclick="adminLogout()">Logout</button>
+                </div>
             </div>
 
             <!-- Stats -->
