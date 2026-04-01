@@ -74,6 +74,11 @@
         <div class="card" style="margin-bottom:24px;">
             <h3 style="font-size:.95rem; color:var(--text2); margin-bottom:14px;">Plan Details</h3>
             <div id="planDetails" style="font-size:.9rem; line-height:1.9;"></div>
+            <div id="aiTrialWrap" style="margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--border); display: none;">
+                <button id="claimAiTrialBtn" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #7c3aed, #a855f7); width: 100%;" onclick="claimFreeAiTrial()">
+                    🎁 Claim Free 1-Day AI Addon Trial
+                </button>
+            </div>
         </div>
 
         <!-- Payment Section -->
@@ -92,6 +97,7 @@
                     <option value="PRO_HOUR:40">PRO Hour — ₹40 (+1 hr session)</option>
                     <option value="PRO_BOTH:60">PRO Both — ₹60 (Fast + 2hrs)</option>
                     <option value="SUPER:80">SUPER — ₹80 (Medium + 3hrs)</option>
+                    <option value="AI_ADDON:50">AI Addon — ₹50 (Groq AI · Expires midnight today)</option>
                 </select>
             </div>
 

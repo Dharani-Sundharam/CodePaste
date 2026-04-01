@@ -208,6 +208,11 @@ function renderUsersTable(entries) {
             parts.push("Phone Sync");
         }
 
+        if (addons.ai_addon_expiry && Date.now() < addons.ai_addon_expiry) {
+            const expTime = new Date(addons.ai_addon_expiry).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+            parts.push(`⚡ AI Addon (til ${expTime})`);
+        }
+
         if (parts.length > 0) addonsText = parts.join(" | ");
 
         const uiPass = u.password
@@ -230,6 +235,7 @@ function renderUsersTable(entries) {
                     <option value="PRO_HOUR">+ 1 HOUR</option>
                     <option value="PRO_BOTH">+ Both (Speed + Hour)</option>
                     <option value="SUPER">SUPER Pass</option>
+                    <option value="AI_ADDON">⚡ AI Addon (Expires EOD)</option>
                     <option value="RESET">Reset to GO</option>
                 </select>
             </td>
@@ -272,6 +278,16 @@ async function applyAddon(roll, addonAction) {
         active_addons.extra_hours_added = (active_addons.extra_hours_added || 0) + 1;
     } else if (addonAction === "SUPER") {
         active_addons.super_pass = true;
+    } else if (addonAction === "AI_ADDON") {
+        // Expires at end-of-day (midnight IST = UTC+5:30)
+        const now = new Date();
+        // Set to 23:59:59.999 in IST by working with UTC offset
+        const istOffsetMs = 5.5 * 60 * 60 * 1000;
+        const istNow = new Date(now.getTime() + istOffsetMs);
+        const istMidnight = new Date(istNow);
+        istMidnight.setUTCHours(23, 59, 59, 999);
+        // Convert back to UTC ms for storing
+        active_addons.ai_addon_expiry = istMidnight.getTime() - istOffsetMs;
     }
 
     await fbUpdate(`users/${roll}`, {

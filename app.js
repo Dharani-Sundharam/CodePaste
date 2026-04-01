@@ -267,12 +267,33 @@ async function loadDashboard(user) {
     badge.textContent = badgeText;
     badge.className = "plan-badge " + (userData.suspended ? "suspended" : badgeClass);
 
+    // AI Addon status
+    let aiAddonText = "Expired / Not Purchased";
+    let aiAddonColor = "#ff6b81";
+    if (addons.ai_addon_expiry && Date.now() < addons.ai_addon_expiry) {
+        const exp = new Date(addons.ai_addon_expiry);
+        aiAddonText = `Active — expires ${exp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} today`;
+        aiAddonColor = "#a78bfa";
+    }
+
     document.getElementById("planDetails").innerHTML = `
         <p><strong>Speed:</strong> ${speed}</p>
         <p><strong>Session length:</strong> ${hrs} hour${hrs > 1 ? "s" : ""}</p>
         <p><strong>Phone Sync:</strong> <strong style="color:${hasSync ? '#43e97b' : '#ff6b81'}">${hasSync ? 'Active (7-Day Pass)' : 'Expired / Not Purchased'}</strong></p>
+        <p><strong>AI Addon (Alt+B):</strong> <strong style="color:${aiAddonColor}">${aiAddonText}</strong></p>
         <p><strong>Cooldown:</strong> 2 hours after session ends</p>
     `;
+
+    // Show AI Trial button if they haven't availed it yet, and they don't already have it
+    const hasActiveAi = (addons.ai_addon_expiry && Date.now() < addons.ai_addon_expiry);
+    const aiTrialWrap = document.getElementById("aiTrialWrap");
+    if (aiTrialWrap) {
+        if (!userData.ai_trial_availed && !hasActiveAi) {
+            aiTrialWrap.style.display = "block";
+        } else {
+            aiTrialWrap.style.display = "none";
+        }
+    }
 
     // Pending payment notice
     if (userData.pending_plan) {
@@ -284,3 +305,35 @@ async function loadDashboard(user) {
     }
 }
 
+window.claimFreeAiTrial = async function() {
+    const user = getLoggedInUser();
+    if (!user) return;
+    
+    // Disable button, show loading
+    const btn = document.getElementById("claimAiTrialBtn");
+    btn.disabled = true;
+    btn.textContent = "Activating...";
+    
+    // Set AI expiry to midnight today
+    let aiExpiry = new Date();
+    aiExpiry.setHours(23, 59, 59, 999);
+    
+    try {
+        const u = await fbGet(`users/${user.rollNumber}`);
+        let activeAddons = u.active_addons || {};
+        activeAddons.ai_addon_expiry = aiExpiry.getTime();
+        
+        await fbUpdate(`users/${user.rollNumber}`, {
+            active_addons: activeAddons,
+            ai_trial_availed: true
+        });
+        
+        // Reload dashboard
+        loadDashboard(user);
+        showStatus("statusMsg", "🎉 Free AI Addon Trial activated! Valid until midnight tonight.", "success");
+    } catch(err) {
+        showStatus("statusMsg", "Failed to activate trial: " + err.message, "error");
+        btn.disabled = false;
+        btn.textContent = "🎁 Claim Free 1-Day AI Addon Trial";
+    }
+}
