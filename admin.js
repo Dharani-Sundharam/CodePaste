@@ -527,41 +527,98 @@ async function runOcrVerification(key, p) {
 // ── OCR text parser ───────────────────────────────────
 function _parseOcrText(text, expectedAmount) {
     const upper = text.toUpperCase();
+    const expected = parseInt(expectedAmount);
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-    // Payee name check (OCR sometimes garbles spaces — also check without space)
-    const payeeVerified = upper.includes(PAYEE_NAME.toUpperCase()) ||
+    // Payee: case-insensitive, also tolerate OCR dropping the space
+    const payeeVerified =
+        upper.includes(PAYEE_NAME.toUpperCase()) ||
         upper.includes(PAYEE_NAME.replace(" ", "").toUpperCase());
 
-    // Amount extraction — handles ₹20, Rs.20, Rs 20, 20.00, etc.
+    // ── Amount (3-pass) ──────────────────────────────────
+    // GPay renders the rupee symbol as a separate giant glyph,
+    // so OCR emits "₹" on its own line then "20" on the next line.
     let amount = null;
     let amountVerified = false;
-    const amtMatch = text.match(/(?:₹|Rs\.?\s*|INR\s*)(\d+(?:[.,]\d+)?)/i)
-                  || text.match(/(\d+(?:\.\d+)?)\s*(?:₹|Rs|INR)/i);
-    if (amtMatch) {
-        amount = parseFloat(amtMatch[1].replace(",", ""));
-        amountVerified = Math.round(amount) === parseInt(expectedAmount);
+
+    // Pass 1: adjacent symbol  ₹20 / Rs.20 / 20 Rs (single line)
+    const adj = text.match(/(?:₹|Rs\.?\s*|INR\s*)(\d+(?:[.,]\d+)?)/i)
+             || text.match(/(\d+(?:\.\d+)?)\s*(?:₹|Rs|INR)/i);
+    if (adj) {
+        amount = parseFloat(adj[1].replace(",", ""));
+        amountVerified = Math.round(amount) === expected;
     }
 
-    // UTR / Transaction ID — try labeled patterns first, then bare 12-digit numbers
+    // Pass 2: multiline — currency symbol alone on line i, digits on line i+1
+    if (!amountVerified) {
+        for (let i = 0; i < lines.length - 1; i++) {
+            if (["₹", "Rs", "INR"].includes(lines[i])) {
+                const val = parseFloat(lines[i + 1].replace(/[,\s]/g, ""));
+                if (!isNaN(val)) { amount = val; amountVerified = Math.round(val) === expected; break; }
+            }
+        }
+    }
+
+    // Pass 3: standalone exact-match line (the big display number, no symbol)
+    // Only accept if the number exactly equals the expected amount
+    if (!amountVerified) {
+        for (const line of lines) {
+            const clean = line.replace(/[₹,\s]/g, "");
+            if (/^\d+(\.\d+)?$/.test(clean)) {
+                const val = parseFloat(clean);
+                if (Math.round(val) === expected) { amount = val; amountVerified = true; break; }
+            }
+        }
+    }
+
+    // ── UTR (5-pass) ─────────────────────────────────────
+    // GPay: "UPI transaction ID" on line i, value "643158208486" on line i+1
     let utr = null;
-    const utrPatterns = [
-        /(?:UTR|UPI\s*Ref(?:erence)?|Ref(?:erence)?\s*(?:No\.?|ID)?|Transaction\s*ID|Txn\s*ID|Order\s*ID|Ref\s*No)[:\s#*]*([A-Z0-9]{8,20})/i,
-        /\b([T][0-9A-Z]{10,15})\b/i,  // PhonePe style: T2504XXXXXXXX
-        /\b([0-9]{12})\b/              // Plain 12-digit UTR
-    ];
-    for (const pat of utrPatterns) {
-        const m = text.match(pat);
-        if (m && m[1]) { utr = m[1].toUpperCase().replace(/\s/g, ""); break; }
+
+    // Pass 1: same-line label:value (Paytm / PhonePe)
+    const sl = text.match(/(?:UTR|UPI\s*(?:transaction\s*)?(?:Ref(?:erence)?)?\s*(?:ID|No\.?)?|Transaction\s*ID|Txn\s*ID|Ref(?:erence)?\s*(?:No\.?|ID)?|Order\s*ID)[:\s#*—-]*([A-Z0-9]{8,25})/i);
+    if (sl && sl[1]) utr = sl[1].toUpperCase().replace(/\s/g, "");
+
+    // Pass 2: label on line i, value on line i+1 (GPay style)
+    if (!utr) {
+        const LBL = ["UPI TRANSACTION ID", "TRANSACTION ID", "UTR", "REF NO", "ORDER ID", "REFERENCE ID"];
+        for (let i = 0; i < lines.length - 1; i++) {
+            const lu = lines[i].toUpperCase();
+            if (LBL.some(k => lu.includes(k))) {
+                const val = lines[i + 1].replace(/\s/g, "");
+                if (/^[A-Z0-9]{8,25}$/i.test(val)) { utr = val.toUpperCase(); break; }
+            }
+        }
     }
 
-    // Timestamp extraction
+    // Pass 3: PhonePe T-prefixed ID
+    if (!utr) { const pp = text.match(/\b([T][0-9A-Z]{10,15})\b/i); if (pp) utr = pp[1].toUpperCase(); }
+
+    // Pass 4: bare 12-digit UPI UTR number
+    if (!utr) { const b12 = text.match(/\b([0-9]{12})\b/); if (b12) utr = b12[1]; }
+
+    // Pass 5: Google transaction ID as last resort
+    if (!utr) {
+        for (let i = 0; i < lines.length - 1; i++) {
+            if (lines[i].toUpperCase().includes("GOOGLE TRANSACTION ID")) {
+                const val = lines[i + 1].replace(/\s/g, "");
+                if (val.length >= 8) { utr = val.toUpperCase(); break; }
+            }
+        }
+    }
+
+    // ── Timestamp ────────────────────────────────────────
+    // GPay: "6 Mar 2026, 2:11 pm"
     let timestamp = null;
-    const tsMatch = text.match(/(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}[\s,]+\d{1,2}:\d{2}\s*(?:AM|PM)?)/i)
-                 || text.match(/(\d{1,2}:\d{2}\s*(?:AM|PM)\s+\d{1,2}\s+\w+\s+\d{4})/i);
+    const tsMatch =
+        text.match(/(\d{1,2}\s+\w{3,9}\s+\d{4},?\s+\d{1,2}:\d{2}\s*(?:am|pm)?)/i) ||
+        text.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}[\s,]+\d{1,2}:\d{2}\s*(?:AM|PM)?)/i) ||
+        text.match(/(\d{1,2}:\d{2}\s*(?:AM|PM)\s+\d{1,2}\s+\w+\s+\d{4})/i);
     if (tsMatch) timestamp = tsMatch[1].trim();
 
     return { payeeVerified, amount, amountVerified, utr, timestamp };
 }
+
 
 // ── Auto-approve path ─────────────────────────────────
 async function _autoApprove(key, p, ocrData) {
