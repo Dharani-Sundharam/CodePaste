@@ -1131,3 +1131,126 @@ table.admin-table select {
         flex-direction: column;
     }
 }
+
+/* ═══════════════════════════════════════════════════════
+   OCR Verification UI
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Verifying shimmer row ─────────────────────────────── */
+.ocr-status {
+    margin: 10px 0 6px;
+}
+
+.ocr-verifying {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: rgba(88, 166, 255, .05);
+    border: 1px solid rgba(88, 166, 255, .15);
+    border-radius: 8px;
+    font-size: .82rem;
+    color: var(--text2);
+    animation: ocr-shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes ocr-shimmer {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .55; }
+}
+
+/* ── Spinner ───────────────────────────────────────────── */
+.ocr-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(88, 166, 255, .25);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: ocr-spin .75s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes ocr-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Verified panel ────────────────────────────────────── */
+.ocr-verified {
+    background: rgba(63, 185, 80, .07);
+    border: 1px solid rgba(63, 185, 80, .22);
+    border-radius: 8px;
+    padding: 10px 13px;
+    animation: ocr-fadein .35s ease;
+}
+
+/* ── Flagged panel ─────────────────────────────────────── */
+.ocr-flagged {
+    background: rgba(210, 153, 34, .07);
+    border: 1px solid rgba(210, 153, 34, .28);
+    border-radius: 8px;
+    padding: 10px 13px;
+    animation: ocr-fadein .35s ease;
+}
+
+@keyframes ocr-fadein {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Status badge pill ─────────────────────────────────── */
+.ocr-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .74rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+.ocr-badge.verified {
+    background: rgba(63, 185, 80, .14);
+    color: var(--green, #3fb950);
+    border: 1px solid rgba(63, 185, 80, .25);
+}
+
+.ocr-badge.flagged {
+    background: rgba(210, 153, 34, .14);
+    color: var(--yellow, #d29922);
+    border: 1px solid rgba(210, 153, 34, .3);
+}
+
+/* ── Extracted field pills ─────────────────────────────── */
+.ocr-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    font-size: .8rem;
+    color: var(--text2);
+}
+
+.ocr-fields span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ocr-pass { color: var(--green, #3fb950); font-weight: 600; }
+.ocr-miss { color: var(--red,   #f85149); font-weight: 600; }
+
+/* ── Reasons list ──────────────────────────────────────── */
+.ocr-reasons {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(210, 153, 34, .18);
+    font-size: .78rem;
+    color: var(--red, #f85149);
+}
+
+.ocr-reason {
+    margin-top: 3px;
+    line-height: 1.4;
+}

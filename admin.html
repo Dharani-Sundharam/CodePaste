@@ -103,6 +103,7 @@
                     Payment Queue <span id="paymentNotifBadge" class="notif-badge" style="display:none;">0</span>
                     <span id="liveIndicator" title="Live updates active" style="display:none; width:8px; height:8px; background:var(--green,#43e97b); border-radius:50%; display:inline-block; margin-left:5px; animation:livepulse 1.5s infinite;"></span>
                 </button>
+                <button class="admin-tab" id="tab-log" onclick="switchTab('log')">Payment Log</button>
             </div>
 
             <!-- Users Tab -->
@@ -139,6 +140,29 @@
                 </div>
                 <div id="paymentQueueList"></div>
             </div>
+
+            <!-- Payment Log Tab -->
+            <div id="tabPaymentLog" style="display:none;">
+                <p style="font-size:.85rem; color:var(--text3); margin-bottom:14px;">All processed payments — auto-approved, manually approved, rejected, and flagged.</p>
+                <div class="users-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Roll</th>
+                                <th>Name</th>
+                                <th>Plan</th>
+                                <th>Amount</th>
+                                <th>UTR</th>
+                                <th>Status</th>
+                                <th>Reviewed At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentLogBody">
+                            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3);">Switch to this tab to load log...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -146,6 +170,9 @@
         @keyframes livepulse {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: .4; transform: scale(.7); }
+        }
+        @keyframes ocr-spin {
+            to { transform: rotate(360deg); }
         }
     </style>
     <script src="app.js"></script>

@@ -12,6 +12,12 @@ let currentTab = "users";
 let usersStream = null;
 let paymentsStream = null;
 
+// ── OCR & Admin Notification Config ───────────────────
+const PAYEE_NAME      = "GOPALAKRISHNAN P";
+const ADMIN_WA_PHONE  = "+919626262428";
+const ADMIN_WA_APIKEY = "4667147";
+const verifyingKeys   = new Set(); // prevents double-OCR on re-render
+
 // ── Page startup ───────────────────────────────────────
 function adminStartup() {
     checkAdminSetup();
@@ -133,8 +139,11 @@ function switchTab(tab) {
     currentTab = tab;
     document.getElementById("tabUsers").style.display = tab === "users" ? "block" : "none";
     document.getElementById("tabPayments").style.display = tab === "payments" ? "block" : "none";
+    document.getElementById("tabPaymentLog").style.display = tab === "log" ? "block" : "none";
     document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
     document.getElementById("tab-" + tab).classList.add("active");
+    // Reload log data fresh each time the tab is visited
+    if (tab === "log") fbGet("payment_requests").then(p => renderPaymentLog(p || {}));
 }
 
 // ── Load Dashboard ─────────────────────────────────────
@@ -176,6 +185,7 @@ async function loadAdminDashboard() {
 
     renderUsersTable(entries);
     renderPaymentQueue(pendingPayments, payments ? payments : {});
+    renderPaymentLog(payments ? payments : {});
 }
 
 // ── Render users table ─────────────────────────────────
@@ -364,7 +374,16 @@ function renderPaymentQueue(pendingEntries, allPayments) {
                 <strong>${p.roll_number || ""}</strong> — ${p.name || ""}
                 <p>Requested: <strong>${p.requested_plan}</strong> &nbsp;·&nbsp; ₹${p.amount}</p>
                 <p style="margin-top:2px;">Submitted: ${ts}</p>
-                <div class="queue-actions">
+
+                <!-- OCR Verification Status (auto-populated) -->
+                <div class="ocr-status" id="ocrStatus_${key}">
+                    <div class="ocr-verifying">
+                        <div class="ocr-spinner"></div>
+                        <span>Verifying payment via OCR…</span>
+                    </div>
+                </div>
+
+                <div class="queue-actions" id="queueActions_${key}">
                     <button class="btn btn-green btn-sm" onclick="approvePayment('${key}', '${p.roll_number}', '${p.requested_plan}')">
                         ✓ Approve
                     </button>
@@ -376,6 +395,9 @@ function renderPaymentQueue(pendingEntries, allPayments) {
             </div>
         </div>`;
     }).join("");
+
+    // Kick off OCR verification for each card (async, non-blocking)
+    pendingEntries.forEach(([key, p]) => runOcrVerification(key, p));
 }
 
 async function approvePayment(key, roll, plan) {
@@ -437,4 +459,274 @@ async function logoutAllDevices() {
     } catch (e) {
         alert("Failed to clear sessions: " + e.message);
     }
+}
+
+// ═══════════════════════════════════════════════════════
+//  OCR PAYMENT VERIFICATION ENGINE
+// ═══════════════════════════════════════════════════════
+
+// ── Main orchestrator ─────────────────────────────────
+async function runOcrVerification(key, p) {
+    // Prevent re-running if already verifying this key
+    if (verifyingKeys.has(key)) return;
+    verifyingKeys.add(key);
+
+    const statusEl = document.getElementById(`ocrStatus_${key}`);
+    if (!statusEl) { verifyingKeys.delete(key); return; }
+
+    try {
+        // Call our Vercel serverless proxy (keeps API key server-side)
+        const res = await fetch("/api/ocr", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: p.screenshot_url })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+            // OCR itself failed — flag for manual review
+            _showOcrError(key, `OCR failed: ${data.error}`);
+            verifyingKeys.delete(key);
+            return;
+        }
+
+        const ocrData = _parseOcrText(data.text, p.amount);
+        const reasons = [];
+
+        // ── Check 1: Correct payee ─────────────────────
+        if (!ocrData.payeeVerified)
+            reasons.push(`Payee not found — expected "${PAYEE_NAME}"`);
+
+        // ── Check 2: Amount matches ────────────────────
+        if (!ocrData.amountVerified)
+            reasons.push(`Amount mismatch — expected ₹${p.amount}, OCR found: ${ocrData.amount != null ? '₹' + ocrData.amount : 'none'}`);
+
+        // ── Check 3: UTR uniqueness ────────────────────
+        if (ocrData.utr) {
+            const existing = await fbGet(`verified_utrs/${ocrData.utr}`);
+            if (existing)
+                reasons.push(`Duplicate UTR ${ocrData.utr} — already used by roll ${existing.roll}`);
+        } else {
+            reasons.push("No UTR / Transaction ID found in screenshot");
+        }
+
+        if (reasons.length === 0) {
+            await _autoApprove(key, p, ocrData);
+        } else {
+            await _flagPayment(key, p, ocrData, reasons);
+        }
+
+    } catch (err) {
+        _showOcrError(key, `Unexpected error: ${err.message}`);
+    } finally {
+        verifyingKeys.delete(key);
+    }
+}
+
+// ── OCR text parser ───────────────────────────────────
+function _parseOcrText(text, expectedAmount) {
+    const upper = text.toUpperCase();
+
+    // Payee name check (OCR sometimes garbles spaces — also check without space)
+    const payeeVerified = upper.includes(PAYEE_NAME.toUpperCase()) ||
+        upper.includes(PAYEE_NAME.replace(" ", "").toUpperCase());
+
+    // Amount extraction — handles ₹20, Rs.20, Rs 20, 20.00, etc.
+    let amount = null;
+    let amountVerified = false;
+    const amtMatch = text.match(/(?:₹|Rs\.?\s*|INR\s*)(\d+(?:[.,]\d+)?)/i)
+                  || text.match(/(\d+(?:\.\d+)?)\s*(?:₹|Rs|INR)/i);
+    if (amtMatch) {
+        amount = parseFloat(amtMatch[1].replace(",", ""));
+        amountVerified = Math.round(amount) === parseInt(expectedAmount);
+    }
+
+    // UTR / Transaction ID — try labeled patterns first, then bare 12-digit numbers
+    let utr = null;
+    const utrPatterns = [
+        /(?:UTR|UPI\s*Ref(?:erence)?|Ref(?:erence)?\s*(?:No\.?|ID)?|Transaction\s*ID|Txn\s*ID|Order\s*ID|Ref\s*No)[:\s#*]*([A-Z0-9]{8,20})/i,
+        /\b([T][0-9A-Z]{10,15})\b/i,  // PhonePe style: T2504XXXXXXXX
+        /\b([0-9]{12})\b/              // Plain 12-digit UTR
+    ];
+    for (const pat of utrPatterns) {
+        const m = text.match(pat);
+        if (m && m[1]) { utr = m[1].toUpperCase().replace(/\s/g, ""); break; }
+    }
+
+    // Timestamp extraction
+    let timestamp = null;
+    const tsMatch = text.match(/(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}[\s,]+\d{1,2}:\d{2}\s*(?:AM|PM)?)/i)
+                 || text.match(/(\d{1,2}:\d{2}\s*(?:AM|PM)\s+\d{1,2}\s+\w+\s+\d{4})/i);
+    if (tsMatch) timestamp = tsMatch[1].trim();
+
+    return { payeeVerified, amount, amountVerified, utr, timestamp };
+}
+
+// ── Auto-approve path ─────────────────────────────────
+async function _autoApprove(key, p, ocrData) {
+    // Apply the addon to user
+    await applyAddon(p.roll_number, p.requested_plan);
+
+    // Mark as auto_approved in DB
+    await fbUpdate(`payment_requests/${key}`, {
+        status: "auto_approved",
+        reviewed_at: Date.now(),
+        ocr_utr: ocrData.utr || null,
+        ocr_amount: ocrData.amount || null,
+        ocr_timestamp: ocrData.timestamp || null,
+        review_method: "ocr_auto"
+    });
+
+    // Store UTR to block reuse
+    if (ocrData.utr) {
+        await fbSet(`verified_utrs/${ocrData.utr}`, {
+            roll: p.roll_number,
+            plan: p.requested_plan,
+            amount: parseInt(p.amount),
+            verified_at: Date.now(),
+            payment_key: key
+        });
+    }
+
+    // Update card UI → green verified panel
+    const statusEl = document.getElementById(`ocrStatus_${key}`);
+    if (statusEl) {
+        statusEl.innerHTML = `
+            <div class="ocr-verified">
+                <span class="ocr-badge verified">✅ Auto-Verified & Approved</span>
+                <div class="ocr-fields">
+                    <span>Payee: <strong class="ocr-pass">✓ ${PAYEE_NAME}</strong></span>
+                    <span>Amount: <strong>₹${ocrData.amount || p.amount}</strong></span>
+                    ${ocrData.utr ? `<span>UTR: <strong>${ocrData.utr}</strong></span>` : ""}
+                    ${ocrData.timestamp ? `<span>Paid at: <strong>${ocrData.timestamp}</strong></span>` : ""}
+                </div>
+            </div>`;
+    }
+
+    // Hide action buttons — no manual action needed
+    const actionsEl = document.getElementById(`queueActions_${key}`);
+    if (actionsEl) actionsEl.style.display = "none";
+
+    // Animate card fadeout after a moment
+    setTimeout(() => {
+        const card = document.getElementById(`queueCard_${key}`);
+        if (card) {
+            card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+            card.style.opacity = "0";
+            card.style.transform = "scale(0.96)";
+            setTimeout(() => { card.remove(); _updateBadge(-1); }, 550);
+        }
+    }, 2500);
+
+    // WhatsApp success notification
+    _sendAdminWhatsApp(
+        `✅ CTpaste Auto-Approved!\nRoll: ${p.roll_number}\nName: ${p.name}\nPlan: ${p.requested_plan}\nAmount: ₹${p.amount}\nUTR: ${ocrData.utr || "N/A"}\nPaid at: ${ocrData.timestamp || new Date().toLocaleString("en-IN")}\nStatus: Verified & Approved ✓`
+    );
+}
+
+// ── Flag path ─────────────────────────────────────────
+async function _flagPayment(key, p, ocrData, reasons) {
+    // Mark as flagged in DB (stays in queue for manual review)
+    await fbUpdate(`payment_requests/${key}`, {
+        status: "flagged",
+        flagged_at: Date.now(),
+        flag_reasons: reasons,
+        ocr_utr: ocrData.utr || null,
+        ocr_amount: ocrData.amount || null,
+        review_method: "ocr_flagged"
+    });
+
+    const statusEl = document.getElementById(`ocrStatus_${key}`);
+    if (statusEl) {
+        const amtClass = ocrData.amountVerified ? "ocr-pass" : "ocr-miss";
+        statusEl.innerHTML = `
+            <div class="ocr-flagged">
+                <span class="ocr-badge flagged">⚠ Manual Review Required</span>
+                <div class="ocr-fields">
+                    <span class="${ocrData.payeeVerified ? "ocr-pass" : "ocr-miss"}">
+                        Payee: ${ocrData.payeeVerified ? "✓ Found" : "❌ Not found"}
+                    </span>
+                    ${ocrData.amount != null
+                        ? `<span class="${amtClass}">Amount: ₹${ocrData.amount} ${ocrData.amountVerified ? "✓" : "(expected ₹" + p.amount + ")"}</span>`
+                        : `<span class="ocr-miss">Amount: ❌ Not found</span>`}
+                    ${ocrData.utr
+                        ? `<span>UTR: <strong>${ocrData.utr}</strong></span>`
+                        : `<span class="ocr-miss">UTR: ❌ Not found</span>`}
+                    ${ocrData.timestamp ? `<span>Paid at: ${ocrData.timestamp}</span>` : ""}
+                </div>
+                <div class="ocr-reasons">
+                    ${reasons.map(r => `<div class="ocr-reason">• ${r}</div>`).join("")}
+                </div>
+            </div>`;
+    }
+
+    // WhatsApp alert to admin
+    _sendAdminWhatsApp(
+        `⚠ CTpaste Payment FLAGGED!\nRoll: ${p.roll_number}\nName: ${p.name}\nPlan: ${p.requested_plan} (₹${p.amount})\nIssues:\n${reasons.map(r => "• " + r).join("\n")}\nPlease check admin panel.`
+    );
+}
+
+// ── OCR error fallback ────────────────────────────────
+function _showOcrError(key, msg) {
+    const statusEl = document.getElementById(`ocrStatus_${key}`);
+    if (statusEl) {
+        statusEl.innerHTML = `
+            <div class="ocr-flagged">
+                <span class="ocr-badge flagged">⚠ OCR Unavailable — Manual Review</span>
+                <div style="font-size:.8rem;color:var(--text3);margin-top:4px;">${msg}</div>
+            </div>`;
+    }
+}
+
+// ── WhatsApp sender ───────────────────────────────────
+function _sendAdminWhatsApp(plainText) {
+    const encoded = encodeURIComponent(plainText);
+    fetch(`https://api.callmebot.com/whatsapp.php?phone=${ADMIN_WA_PHONE}&text=${encoded}&apikey=${ADMIN_WA_APIKEY}`)
+        .catch(() => {}); // fire-and-forget
+}
+
+// ── Badge updater ─────────────────────────────────────
+function _updateBadge(delta) {
+    const b = document.getElementById("paymentNotifBadge");
+    const s = document.getElementById("statPending");
+    const n = Math.max(0, parseInt(b.textContent || "0") + delta);
+    if (n <= 0) b.style.display = "none";
+    else { b.textContent = n; b.style.display = "inline-flex"; }
+    if (s) s.textContent = Math.max(0, parseInt(s.textContent || "0") + delta);
+}
+
+// ── Payment Log renderer ──────────────────────────────
+function renderPaymentLog(allPayments) {
+    const logBody = document.getElementById("paymentLogBody");
+    if (!logBody) return;
+
+    const processed = Object.entries(allPayments)
+        .filter(([, p]) => p.status && p.status !== "pending")
+        .sort((a, b) => (b[1].reviewed_at || b[1].flagged_at || 0) - (a[1].reviewed_at || a[1].flagged_at || 0));
+
+    if (!processed.length) {
+        logBody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3);">No processed payments yet.</td></tr>`;
+        return;
+    }
+
+    const COLORS = { auto_approved: "var(--green,#3fb950)", approved: "var(--green,#3fb950)", rejected: "var(--red,#f85149)", flagged: "var(--yellow,#d29922)" };
+    const LABELS = { auto_approved: "✅ Auto-Approved", approved: "✓ Approved", rejected: "✗ Rejected", flagged: "⚠ Flagged" };
+
+    logBody.innerHTML = processed.map(([key, p]) => {
+        const color = COLORS[p.status] || "var(--text3)";
+        const label = LABELS[p.status] || p.status;
+        const ts = (p.reviewed_at || p.flagged_at)
+            ? new Date(p.reviewed_at || p.flagged_at).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" })
+            : "—";
+        return `<tr>
+            <td style="font-weight:600;font-variant-numeric:tabular-nums;">${p.roll_number || "—"}</td>
+            <td>${p.name || "—"}</td>
+            <td>${p.requested_plan || "—"}</td>
+            <td>₹${p.amount || "—"}</td>
+            <td style="font-family:monospace;font-size:.8rem;color:var(--text2);">${p.ocr_utr || "—"}</td>
+            <td style="color:${color};font-weight:600;font-size:.83rem;">${label}</td>
+            <td style="font-size:.8rem;color:var(--text2);">${ts}</td>
+        </tr>`;
+    }).join("");
 }
