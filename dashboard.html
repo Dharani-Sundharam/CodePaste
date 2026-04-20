@@ -7,6 +7,340 @@
     <title>Dashboard — CTpaste</title>
     <link rel="icon" type="image/png" href="assets/icon.png">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Dashboard mobile-first base ───────────────────── */
+        .dash-wrap {
+            padding: 16px 16px 60px;
+        }
+
+        /* ── Pay Plan Cards ─────────────────────────────────── */
+        .pay-plan-card {
+            position: relative;
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 12px 12px;
+            cursor: pointer;
+            transition: border-color .22s ease, transform .22s ease, box-shadow .22s ease, background .22s ease;
+            text-align: center;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .pay-plan-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(88,166,255,.06), transparent);
+            opacity: 0;
+            transition: opacity .22s;
+        }
+
+        @media (hover: hover) {
+            .pay-plan-card:hover {
+                border-color: var(--accent);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(88,166,255,.12);
+            }
+            .pay-plan-card:hover::before { opacity: 1; }
+        }
+
+        .pay-plan-card:active {
+            transform: scale(.97);
+        }
+
+        .pay-plan-card.selected {
+            border-color: var(--accent);
+            background: rgba(88,166,255,.07);
+            box-shadow: 0 0 0 2px rgba(88,166,255,.2), 0 6px 24px rgba(88,166,255,.12);
+        }
+        .pay-plan-card.selected::before { opacity: 1; }
+
+        .ppc-featured { border-color: rgba(88,166,255,.35); }
+        .ppc-ai       { border-color: rgba(167,139,250,.30); }
+
+        @media (hover: hover) {
+            .ppc-ai:hover, .ppc-ai.selected {
+                border-color: var(--purple);
+                box-shadow: 0 0 0 2px rgba(167,139,250,.2), 0 6px 24px rgba(167,139,250,.12);
+            }
+        }
+        .ppc-ai.selected {
+            border-color: var(--purple);
+            box-shadow: 0 0 0 2px rgba(167,139,250,.2), 0 6px 24px rgba(167,139,250,.12);
+        }
+
+        .ppc-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(88,166,255,.12);
+            margin: 0 auto 8px;
+        }
+        .ppc-ai .ppc-dot { background: rgba(167,139,250,.12); }
+        .ppc-featured .ppc-dot { background: rgba(88,166,255,.18); }
+
+        .ppc-name  { font-size: .78rem; font-weight: 700; color: var(--text); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
+        .ppc-price { font-size: 1.25rem; font-weight: 800; color: var(--accent); margin-bottom: 3px; }
+        .ppc-ai .ppc-price { color: var(--purple); }
+        .ppc-desc  { font-size: .68rem; color: var(--text3); line-height: 1.4; }
+
+        .ppc-best-badge {
+            position: absolute;
+            top: 7px; right: 7px;
+            font-size: .55rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            background: var(--accent-d);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 20px;
+        }
+
+        /* Plan cards grid — 2 cols on mobile, grows on wider screens */
+        #planCardsGrid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        @media (min-width: 420px) {
+            #planCardsGrid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 640px) {
+            #planCardsGrid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        }
+        @media (min-width: 860px) {
+            #planCardsGrid { grid-template-columns: repeat(6, 1fr); }
+        }
+
+        /* ── QR Panel ───────────────────────────────────────── */
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        #qrPanel { animation: slideDown .28s ease; }
+
+        .qr-flow-card {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(88,166,255,.22);
+            box-shadow: 0 0 28px rgba(88,166,255,.06);
+            background: var(--bg2);
+        }
+
+        .qr-amount-strip {
+            background: linear-gradient(135deg, rgba(31,111,235,.16), rgba(88,166,255,.07));
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(88,166,255,.15);
+            text-align: center;
+        }
+
+        .qr-amount-label {
+            font-size: .7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--text2);
+            margin-bottom: 4px;
+        }
+
+        #qrAmount {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -1px;
+        }
+
+        .qr-upi-hint {
+            font-size: .74rem;
+            color: var(--text2);
+            margin-top: 4px;
+        }
+
+        .qr-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 22px 20px 16px;
+        }
+
+        .qr-glow-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .qr-glow {
+            position: absolute;
+            inset: -6px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            opacity: .2;
+            filter: blur(10px);
+        }
+
+        #qrImg {
+            width: 160px;
+            height: 160px;
+            border-radius: 12px;
+            display: block;
+            border: 4px solid var(--bg3);
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (min-width: 400px) {
+            #qrImg { width: 180px; height: 180px; }
+        }
+
+        .upi-chip {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+        }
+
+        .upi-chip-label { font-size: .75rem; color: var(--text2); }
+        .upi-chip-id    { font-size: .88rem; font-weight: 700; color: var(--accent); word-break: break-all; }
+
+        /* ── Upload section ─────────────────────────────────── */
+        .upload-section {
+            padding: 0 16px 20px;
+        }
+
+        @media (min-width: 480px) {
+            .upload-section { padding: 0 22px 22px; }
+        }
+
+        .upload-section-label {
+            font-size: .75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--text2);
+            margin-bottom: 10px;
+        }
+
+        .upload-zone {
+            border-radius: 12px;
+            min-height: 90px;
+        }
+
+        .upload-preview-img {
+            max-height: 110px;
+            border-radius: 10px;
+            border: 2px solid var(--accent);
+            cursor: pointer;
+            display: block;
+        }
+
+        .ref-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(88,166,255,.05);
+            border: 1px solid rgba(88,166,255,.14);
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background .2s;
+            margin-top: 12px;
+        }
+        .ref-pill:active { background: rgba(88,166,255,.1); }
+
+        .ref-thumb {
+            width: 34px;
+            height: 34px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .ref-pill-title { font-size: .8rem; font-weight: 600; color: var(--accent); }
+        .ref-pill-sub   { font-size: .71rem; color: var(--text2); margin-top: 1px; }
+
+        /* ── Submit button ──────────────────────────────────── */
+        #submitPaymentBtn {
+            width: 100%;
+            margin-top: 14px;
+            padding: 14px;
+            font-size: .95rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-d), var(--accent));
+            box-shadow: 0 4px 16px rgba(31,111,235,.28);
+            transition: box-shadow .25s, transform .2s, opacity .2s;
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            font-weight: 700;
+            font-family: inherit;
+            letter-spacing: .2px;
+        }
+        @media (hover: hover) {
+            #submitPaymentBtn:not(:disabled):hover {
+                box-shadow: 0 6px 22px rgba(31,111,235,.45);
+                transform: translateY(-1px);
+            }
+        }
+        #submitPaymentBtn:active:not(:disabled) { transform: scale(.98); }
+        #submitPaymentBtn:disabled { opacity: .45; cursor: not-allowed; }
+
+        /* ── Payment section header ─────────────────────────── */
+        .pay-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .pay-header-secure {
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            padding: 4px 11px;
+            border-radius: 20px;
+            background: rgba(63,185,80,.1);
+            color: var(--green);
+            border: 1px solid rgba(63,185,80,.22);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* ── General mobile tweaks ──────────────────────────── */
+        .stat-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        @media (min-width: 520px) {
+            .stat-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        .dash-header {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 7px 14px;
+            font-size: .82rem;
+        }
+
+        /* Prevent overflow on mobile */
+        body { overflow-x: hidden; }
+
+        /* Larger touch targets for buttons */
+        .btn { min-height: 40px; }
+    </style>
 </head>
 
 <body>
@@ -21,7 +355,7 @@
         <div class="dash-header">
             <div>
                 <h1>My Dashboard</h1>
-                <span id="userRoll" style="color:var(--text2); font-size:.85rem;"></span>
+                <span id="userRoll" style="color:var(--text2); font-size:.82rem;"></span>
             </div>
             <div class="dash-header-right">
                 <span id="planBadge" class="plan-badge go">GO</span>
@@ -58,93 +392,160 @@
             </div>
         </div>
 
-
         <!-- Pending payment notice -->
         <div id="pendingNotice" class="card" style="margin-bottom:24px; display:none; border-color:var(--yellow);">
             <h3 style="font-size:.95rem; color:var(--yellow); margin-bottom:8px;">Payment Under Review</h3>
             <p style="font-size:.88rem; color:var(--text2);">
                 Your payment screenshot for <strong id="pendingPlanName"></strong> has been submitted and is pending
-                admin approval.
-                Once approved, the plan will activate on your next app login.
+                admin approval. Once approved, the plan will activate on your next app login.
             </p>
             <p id="pendingSubmittedAt" style="font-size:.8rem; color:var(--text3); margin-top:8px;"></p>
         </div>
 
-        <!-- Plan Details + Upgrade -->
+        <!-- Plan Details -->
         <div class="card" style="margin-bottom:24px;">
             <h3 style="font-size:.95rem; color:var(--text2); margin-bottom:14px;">Plan Details</h3>
             <div id="planDetails" style="font-size:.9rem; line-height:1.9;"></div>
-            <div id="aiTrialWrap" style="margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--border); display: none;">
-                <button id="claimAiTrialBtn" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #7c3aed, #a855f7); width: 100%;" onclick="claimFreeAiTrial()">
-                    🎁 Claim Free 1-Day AI Addon Trial
+            <div id="aiTrialWrap" style="margin-top:16px; padding-top:12px; border-top:1px dashed var(--border); display:none;">
+                <button id="claimAiTrialBtn" class="btn btn-primary btn-sm"
+                    style="background:linear-gradient(135deg,#7c3aed,#a855f7); width:100%;"
+                    onclick="claimFreeAiTrial()">
+                    Claim Free 1-Day AI Addon Trial
                 </button>
             </div>
         </div>
 
         <!-- Payment Section -->
-        <div class="card" id="paymentSection" style="margin-bottom:24px;">
-            <div style="margin-bottom:16px;">
-                <h3 style="font-size:.95rem; color:var(--text2);">Upgrade Plan — Pay via UPI</h3>
+        <div id="paymentSection" style="margin-bottom:24px;">
+
+            <!-- Header -->
+            <div class="pay-header">
+                <div>
+                    <h2 style="font-size:1.05rem; font-weight:700; color:var(--text); margin-bottom:3px;">Upgrade Your Plan</h2>
+                    <p style="font-size:.8rem; color:var(--text2);">Pay via UPI — activated after admin approval</p>
+                </div>
+                <span class="pay-header-secure">Secure</span>
             </div>
 
-            <!-- Plan selector -->
-            <div class="form-group">
-                <label>Select Plan to Purchase</label>
-                <select id="planSelect" onchange="onPlanSelected()">
-                    <option value="">-- Choose a plan --</option>
-                    <option value="PRO_SPEED:20">PRO Speed — ₹20 (Fast typing)</option>
-                    <option value="SYNC_APP:30">Sync App — ₹30 (Phone Sync - 7 Days)</option>
-                    <option value="PRO_HOUR:40">PRO Hour — ₹40 (+1 hr session)</option>
-                    <option value="PRO_BOTH:60">PRO Both — ₹60 (Fast + 2hrs)</option>
-                    <option value="SUPER:80">SUPER — ₹80 (Medium + 3hrs)</option>
-                    <option value="AI_ADDON:50">AI Addon — ₹50 (Groq AI · Expires midnight today)</option>
-                </select>
+            <!-- Plan Cards Grid -->
+            <div id="planCardsGrid">
+
+                <div class="pay-plan-card" data-value="PRO_SPEED:20" onclick="selectPlanCard(this)">
+                    <div class="ppc-dot"></div>
+                    <div class="ppc-name">PRO Speed</div>
+                    <div class="ppc-price">&#8377;20</div>
+                    <div class="ppc-desc">Fast typing</div>
+                </div>
+
+                <div class="pay-plan-card" data-value="SYNC_APP:30" onclick="selectPlanCard(this)">
+                    <div class="ppc-dot"></div>
+                    <div class="ppc-name">Sync App</div>
+                    <div class="ppc-price">&#8377;30</div>
+                    <div class="ppc-desc">Phone sync · 7d</div>
+                </div>
+
+                <div class="pay-plan-card" data-value="PRO_HOUR:40" onclick="selectPlanCard(this)">
+                    <div class="ppc-dot"></div>
+                    <div class="ppc-name">PRO Hour</div>
+                    <div class="ppc-price">&#8377;40</div>
+                    <div class="ppc-desc">+1 hr session</div>
+                </div>
+
+                <div class="pay-plan-card" data-value="PRO_BOTH:60" onclick="selectPlanCard(this)">
+                    <div class="ppc-dot"></div>
+                    <div class="ppc-name">PRO Both</div>
+                    <div class="ppc-price">&#8377;60</div>
+                    <div class="ppc-desc">Fast + 2 hrs</div>
+                </div>
+
+                <div class="pay-plan-card ppc-featured" data-value="SUPER:80" onclick="selectPlanCard(this)">
+                    <div class="ppc-dot"></div>
+                    <div class="ppc-name">SUPER</div>
+                    <div class="ppc-price">&#8377;80</div>
+                    <div class="ppc-desc">Medium + 3 hrs</div>
+                    <span class="ppc-best-badge">Best</span>
+                </div>
+
+                <div class="pay-plan-card ppc-ai" data-value="AI_ADDON:50" onclick="selectPlanCard(this)">
+                    <div class="ppc-dot"></div>
+                    <div class="ppc-name">AI Addon</div>
+                    <div class="ppc-price">&#8377;50</div>
+                    <div class="ppc-desc">Groq AI · today</div>
+                </div>
+
             </div>
 
-            <!-- QR panel (shown after plan selected) -->
-            <div id="qrPanel" style="display:none; text-align:center;">
-                <hr class="divider">
-                <div class="qr-panel">
-                    <div class="qr-amount" id="qrAmount">₹0</div>
-                    <div class="qr-sub">Scan with any UPI app (PhonePe, GPay, Paytm)</div>
-                    <img id="qrImg" src="" alt="UPI QR Code"
-                        style="width:200px; height:200px; border-radius:10px; margin:16px auto; display:block; border:4px solid var(--bg3);">
-                    <p style="font-size:.8rem; color:var(--text2);">UPI ID: <strong id="upiId"
-                            style="color:var(--accent);">@upi</strong></p>
-                </div>
+            <!-- Hidden select for JS compatibility -->
+            <select id="planSelect" onchange="onPlanSelected()" style="display:none;"></select>
 
-                <!-- Screenshot upload -->
-                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('screenshotInput').click()">
-                    <input type="file" id="screenshotInput" accept="image/*" onchange="onScreenshotSelected(event)">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)"
-                        stroke-width="1.5" style="margin-bottom:8px;">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    <p>Click or drag to upload payment screenshot</p>
-                    <p style="font-size:.76rem; margin-top:4px;">JPG, PNG, WEBP supported</p>
-                </div>
-                <div style="margin-top:16px; text-align:center;">
-                    <p style="font-size:.85rem; color:var(--text2); margin-bottom:8px;">What we look for in the
-                        screenshot:</p>
-                    <img src="assets/ref_img.png" alt="Reference Screenshot"
-                        style="max-width:100%; border-radius:8px; border:2px solid var(--border); cursor:pointer;"
-                        onclick="openLightbox(this.src)">
-                </div>
-                <div id="uploadPreviewWrap" style="display:none; margin-top:14px;">
-                    <img id="uploadPreview" src="" alt=""
-                        style="max-height:140px; border-radius:8px; border:2px solid var(--border);"
-                        onclick="openLightbox(this.src)">
-                    <p id="uploadFileName" style="font-size:.8rem; color:var(--text2); margin-top:6px;"></p>
-                </div>
+            <!-- QR panel -->
+            <div id="qrPanel" style="display:none;">
+                <div class="qr-flow-card">
 
+                    <!-- Amount strip -->
+                    <div class="qr-amount-strip">
+                        <div class="qr-amount-label">Amount to Pay</div>
+                        <div id="qrAmount">&#8377;0</div>
+                        <div class="qr-upi-hint">PhonePe · GPay · Paytm · Any UPI app</div>
+                    </div>
 
+                    <!-- QR code -->
+                    <div class="qr-center">
+                        <div class="qr-glow-wrap">
+                            <div class="qr-glow"></div>
+                            <img id="qrImg" src="" alt="UPI QR Code">
+                        </div>
+                        <div class="upi-chip">
+                            <span class="upi-chip-label">UPI ID</span>
+                            <span class="upi-chip-id" id="upiId">@upi</span>
+                        </div>
+                    </div>
 
-                <button id="submitPaymentBtn" class="btn btn-primary mt-16" onclick="submitPayment()"
-                    style="width:100%;" disabled>
-                    Submit Payment for Review
-                </button>
+                    <!-- Upload section -->
+                    <div class="upload-section">
+                        <div class="upload-section-label">Step 2 — Upload Screenshot</div>
+
+                        <div class="upload-zone" id="uploadZone"
+                            onclick="document.getElementById('screenshotInput').click()"
+                            style="position:relative;">
+                            <input type="file" id="screenshotInput" accept="image/*"
+                                onchange="onScreenshotSelected(event)">
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                                    stroke="var(--accent)" stroke-width="1.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <span style="font-size:.86rem; color:var(--text); font-weight:500;">Tap to upload screenshot</span>
+                                <span style="font-size:.72rem; color:var(--text3);">JPG, PNG or WEBP</span>
+                            </div>
+                        </div>
+
+                        <!-- Upload preview -->
+                        <div id="uploadPreviewWrap" style="display:none; margin-top:12px;">
+                            <img id="uploadPreview" class="upload-preview-img" src="" alt=""
+                                onclick="openLightbox(this.src)">
+                            <p id="uploadFileName"
+                                style="font-size:.76rem; color:var(--text2); margin-top:6px;"></p>
+                        </div>
+
+                        <!-- Reference pill -->
+                        <div class="ref-pill" onclick="openLightbox('assets/ref_img.png')">
+                            <img src="assets/ref_img.png" alt="reference" class="ref-thumb">
+                            <div>
+                                <div class="ref-pill-title">What should the screenshot show?</div>
+                                <div class="ref-pill-sub">Tap to see the reference example</div>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <button id="submitPaymentBtn" onclick="submitPayment()" disabled>
+                            Submit Payment for Review
+                        </button>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
@@ -165,12 +566,27 @@
             const msg = encodeURIComponent(
                 `CTpaste Payment Alert!%0ARoll: ${roll}%0AName: ${name}%0APlan: ${plan}%0AAmount: Rs.${amount}%0ATime: ${new Date().toLocaleString('en-IN')}`
             );
-            // Fire-and-forget — don't await, don't block user
             fetch(`https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${msg}&apikey=${WHATSAPP_APIKEY}`)
-                .catch(() => {}); // Silently ignore any network error
+                .catch(() => {});
         }
 
         let selectedFile = null;
+
+        function selectPlanCard(card) {
+            document.querySelectorAll('.pay-plan-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            const sel = document.getElementById('planSelect');
+            const val = card.dataset.value;
+            let opt = sel.querySelector(`option[value="${val}"]`);
+            if (!opt) {
+                opt = document.createElement('option');
+                opt.value = val;
+                sel.appendChild(opt);
+            }
+            sel.value = val;
+            onPlanSelected();
+            setTimeout(() => document.getElementById('qrPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 350);
+        }
 
         function compressImageToBase64(file, maxW = 600, qual = 0.6) {
             return new Promise((resolve, reject) => {
@@ -198,16 +614,12 @@
             const val = document.getElementById("planSelect").value;
             const qrPanel = document.getElementById("qrPanel");
 
-            if (!val) {
-                qrPanel.style.display = "none";
-                return;
-            }
+            if (!val) { qrPanel.style.display = "none"; return; }
 
             const [plan, amount] = val.split(":");
             document.getElementById("qrAmount").textContent = "₹" + amount;
             qrPanel.style.display = "block";
 
-            // Generate UPI QR using API
             const upi = "paytm.s1ri7l9@pty";
             document.getElementById("upiId").textContent = upi;
             const upiData = encodeURIComponent(`upi://pay?pa=${upi}&pn=CTpaste&am=${amount}&cu=INR&tn=CTpaste+${plan}`);
@@ -240,10 +652,8 @@
             btn.textContent = "Uploading...";
 
             try {
-                // Compress image to Base64 (Stores directly in Realtime DB for Free plan compatibility)
                 const base64Image = await compressImageToBase64(selectedFile);
 
-                // Write to payment_requests in Realtime DB
                 await fbSet(`payment_requests/${user.rollNumber}_${Date.now()}`, {
                     roll_number: user.rollNumber,
                     name: user.name,
@@ -254,7 +664,6 @@
                     status: "pending"
                 });
 
-                // Also mark on user profile
                 await fbUpdate(`users/${user.rollNumber}`, {
                     pending_plan: plan,
                     pending_submitted_at: Date.now()
@@ -266,7 +675,6 @@
                 document.getElementById("pendingNotice").style.display = "block";
                 document.getElementById("paymentSection").style.display = "none";
 
-                // Notify admin via WhatsApp (non-blocking)
                 notifyWhatsApp(user.rollNumber, user.name, plan, amount);
             } catch (err) {
                 showStatus("statusMsg", "Upload failed: " + err.message, "error");
