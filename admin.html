@@ -94,6 +94,10 @@
                     <div class="label">Pending Payments</div>
                     <div class="value" id="statPending" style="color:var(--yellow);">—</div>
                 </div>
+                <div class="admin-stat">
+                    <div class="label">Total Revenue</div>
+                    <div class="value" id="statRevenue" style="color:var(--green);">—</div>
+                </div>
             </div>
 
             <!-- Tabs -->
@@ -103,6 +107,7 @@
                     Payment Queue <span id="paymentNotifBadge" class="notif-badge" style="display:none;">0</span>
                     <span id="liveIndicator" title="Live updates active" style="display:none; width:8px; height:8px; background:var(--green,#43e97b); border-radius:50%; display:inline-block; margin-left:5px; animation:livepulse 1.5s infinite;"></span>
                 </button>
+                <button class="admin-tab" id="tab-paylog" onclick="switchTab('paylog')">Payment Log</button>
             </div>
 
             <!-- Users Tab -->
@@ -138,6 +143,33 @@
                     No pending payment requests
                 </div>
                 <div id="paymentQueueList"></div>
+            </div>
+
+            <!-- Payment Log Tab -->
+            <div id="tabPaylog" style="display:none;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                    <input type="text" class="admin-search" id="paylogSearch" placeholder="Search by roll, name, or plan..." oninput="filterPaymentLog()" style="max-width:320px; margin-bottom:0;">
+                    <div style="font-size:.9rem; color:var(--text2);">Total Revenue: <strong id="paylogRevenue" style="color:var(--green);">₹0</strong></div>
+                </div>
+                <div id="paylogEmpty" style="text-align:center; padding:60px; color:var(--text3); display:none;">No payment history yet</div>
+                <div class="users-table-wrap">
+                    <table class="admin-table" id="paylogTable">
+                        <thead>
+                            <tr>
+                                <th>Roll Number</th>
+                                <th>Name</th>
+                                <th>Plan</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Screenshot</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paylogBody">
+                            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3);">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

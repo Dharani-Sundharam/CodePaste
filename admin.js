@@ -133,6 +133,7 @@ function switchTab(tab) {
     currentTab = tab;
     document.getElementById("tabUsers").style.display = tab === "users" ? "block" : "none";
     document.getElementById("tabPayments").style.display = tab === "payments" ? "block" : "none";
+    document.getElementById("tabPaylog").style.display = tab === "paylog" ? "block" : "none";
     document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
     document.getElementById("tab-" + tab).classList.add("active");
 }
@@ -176,6 +177,15 @@ async function loadAdminDashboard() {
 
     renderUsersTable(entries);
     renderPaymentQueue(pendingPayments, payments ? payments : {});
+
+    // Revenue = sum of approved payment amounts
+    const allPaymentEntries = payments ? Object.values(payments) : [];
+    const revenue = allPaymentEntries
+        .filter(p => p.status === "approved")
+        .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    document.getElementById("statRevenue").textContent = "\u20b9" + revenue.toLocaleString("en-IN");
+
+    renderPaymentLog(payments ? Object.entries(payments) : []);
 }
 
 // ── Render users table ─────────────────────────────────
@@ -338,6 +348,65 @@ function flashRow(roll, color) {
             setTimeout(() => { r.style.background = ""; }, 900);
         }
     });
+}
+
+// ── Payment Log ───────────────────────────────────────
+let allPaymentLogEntries = [];
+
+function renderPaymentLog(entries) {
+    // Sort newest first
+    allPaymentLogEntries = [...entries].sort((a, b) => (b[1].submitted_at || 0) - (a[1].submitted_at || 0));
+    _drawPaymentLog(allPaymentLogEntries);
+}
+
+function filterPaymentLog() {
+    const q = document.getElementById("paylogSearch").value.toLowerCase().trim();
+    const filtered = q
+        ? allPaymentLogEntries.filter(([, p]) =>
+            (p.roll_number && p.roll_number.toLowerCase().includes(q)) ||
+            (p.name && p.name.toLowerCase().includes(q)) ||
+            (p.requested_plan && p.requested_plan.toLowerCase().includes(q))
+        )
+        : allPaymentLogEntries;
+    _drawPaymentLog(filtered);
+}
+
+function _drawPaymentLog(entries) {
+    const tbody = document.getElementById("paylogBody");
+    const empty = document.getElementById("paylogEmpty");
+    const revEl = document.getElementById("paylogRevenue");
+
+    const revenue = entries
+        .filter(([, p]) => p.status === "approved")
+        .reduce((sum, [, p]) => sum + (parseFloat(p.amount) || 0), 0);
+    revEl.textContent = "\u20b9" + revenue.toLocaleString("en-IN");
+
+    if (!entries.length) {
+        tbody.innerHTML = "";
+        empty.style.display = "block";
+        return;
+    }
+    empty.style.display = "none";
+
+    tbody.innerHTML = entries.map(([key, p]) => {
+        const ts = p.submitted_at
+            ? new Date(p.submitted_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
+            : "—";
+        const statusColor = p.status === "approved" ? "var(--green)" : p.status === "rejected" ? "var(--red)" : "var(--yellow)";
+        const statusLabel = p.status === "approved" ? "✓ Approved" : p.status === "rejected" ? "✗ Rejected" : "⏳ Pending";
+        const screenshotBtn = p.screenshot_url
+            ? `<a href="${p.screenshot_url}" target="_blank" class="btn btn-xs btn-outline">View</a>`
+            : "—";
+        return `<tr>
+            <td style="font-weight:600;font-variant-numeric:tabular-nums;">${p.roll_number || "—"}</td>
+            <td>${p.name || "—"}</td>
+            <td>${p.requested_plan || "—"}</td>
+            <td style="font-weight:600;">₹${p.amount || "—"}</td>
+            <td style="color:${statusColor};font-size:.83rem;font-weight:600;">${statusLabel}</td>
+            <td style="font-size:.8rem;color:var(--text2);">${ts}</td>
+            <td>${screenshotBtn}</td>
+        </tr>`;
+    }).join("");
 }
 
 // ── Payment Queue ─────────────────────────────────────
