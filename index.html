@@ -75,8 +75,7 @@
                 <div class="card" style="border-color: rgba(139,92,246,0.35); background: linear-gradient(135deg,#1a1a2e,#200f2e);">
                     <div class="feature-icon" style="background: linear-gradient(135deg,#7c3aed,#a855f7); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-size:1.5rem;">V</div>
                     <h3 class="feature-title" style="color:#c084fc;">AI Assist <span style="font-size:.65rem;background:#7c3aed;color:#fff;border-radius:5px;padding:1px 6px;vertical-align:middle;">NEW</span></h3>
-                    <p class="feature-desc">Press <code>Alt+B</code> with any question on your clipboard. Groq AI answers
-                        instantly and types the response directly into your IDE.</p>
+                    <p class="feature-desc">Three-hotkey AI workflow: <code>Alt+B</code> to capture your question, <code>Alt+G</code> to submit it, and <code>Alt+N</code> to clear history and start fresh. Full conversation memory built in.</p>
                 </div>
             </div>
         </div>
@@ -167,9 +166,14 @@
                 <div class="card step-card" style="border-color:rgba(139,92,246,0.4);">
                     <div class="step-num" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">10</div>
                     <h3 style="color:#c084fc;">AI Assist <span style="font-size:.6rem;background:#7c3aed;color:#fff;border-radius:4px;padding:1px 5px;vertical-align:middle;">AI Addon</span></h3>
-                    <p>Purchase the <strong>AI Addon</strong> (₹50/day) from your dashboard. Open the app, expand the
-                        <em>AI Assist</em> card and paste your free <a href="https://console.groq.com" target="_blank" style="color:var(--accent);">Groq API key</a>.
-                        Copy any question, switch to your IDE, and press <code>Alt+B</code> — AI types the answer directly!</p>
+                    <p>Purchase the <strong>AI Addon</strong> (₹50/day) from your dashboard. Expand the <em>AI Assist</em> card, paste your free <a href="https://console.groq.com" target="_blank" style="color:var(--accent);">Groq API key</a>, click <strong>Verify</strong> then <strong>Save</strong>. Then use the three-step hotkey flow below:</p>
+                    <ol style="margin: 10px 0 0 18px; font-size:.87rem; color:var(--text2); line-height:2.1;">
+                        <li><code>Alt+B</code> — start typing your question (keylogger captures every key you press)</li>
+                        <li><code>Alt+G</code> — submit the captured question to Groq AI; the answer is typed live into your IDE</li>
+                        <li><code>Alt+B</code> again — ask a follow-up; conversation history is remembered automatically</li>
+                        <li><code>Alt+N</code> — clear all history and start a completely fresh conversation</li>
+                    </ol>
+                    <p style="margin-top:10px; font-size:.82rem; color:#9d8fc8;">💡 The app shows how many turns are in memory in the status bar (e.g. <em>[2 turn(s) in memory]</em>). Press <code>Alt+N</code> any time to reset.</p>
                 </div>
             </div>
 
@@ -183,8 +187,51 @@
                     <li>→ For Python: indentation is handled automatically — just copy the code as-is</li>
                     <li>→ If typing stops unexpectedly, click "Stop" then "Start" and press Alt+V again</li>
                     <li>→ Your session timer continues even if you close and reopen the app</li>
-                    <li>→ <strong style="color:var(--accent);">AI Assist:</strong> Copy your question → switch to IDE → press <code>Alt+B</code> — AI types the answer live</li>
+                    <li>→ <strong style="color:var(--accent);">AI follow-ups:</strong> After the first answer, press <code>Alt+B</code> again to ask more — the AI remembers the full conversation</li>
+                    <li>→ <strong style="color:var(--accent);">New topic?</strong> Press <code>Alt+N</code> to wipe history and start a fresh chat with no old context</li>
                 </ul>
+            </div>
+
+            <!-- AI Shortcut Cheat-Sheet -->
+            <div id="ai-shortcuts" style="margin-top: 20px; background: linear-gradient(135deg,#1a1a2e,#1e0f30); border: 1px solid rgba(139,92,246,0.35); border-radius: var(--rl); padding: 24px 28px;">
+                <h3 style="font-size: 1rem; margin-bottom: 6px; color: #c084fc;">🤖 AI Assist — Keyboard Shortcuts</h3>
+                <p style="font-size:.82rem; color:#7a6a9a; margin-bottom:18px;">Requires the AI Addon. Make sure the app is running (green status) and your Groq API key is saved.</p>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div style="background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.25); border-radius:10px; padding:14px 16px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                            <kbd style="background:#2d1f5e; color:#a78bfa; border:1px solid #4c3480; border-radius:6px; padding:3px 10px; font-size:.9rem; font-family:monospace; font-weight:bold;">Alt + B</kbd>
+                            <span style="color:#c084fc; font-size:.85rem; font-weight:600;">Capture Question</span>
+                        </div>
+                        <p style="color:#7a6a9a; font-size:.8rem; margin:0; line-height:1.5;">Switch focus to your IDE, then press <strong style="color:#a78bfa;">Alt+B</strong> and start typing your question directly. Everything you type is captured. Press <strong style="color:#a78bfa;">Alt+G</strong> when done.</p>
+                    </div>
+                    <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:10px; padding:14px 16px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                            <kbd style="background:#0d2d22; color:#34d399; border:1px solid #1a5c43; border-radius:6px; padding:3px 10px; font-size:.9rem; font-family:monospace; font-weight:bold;">Alt + G</kbd>
+                            <span style="color:#6ee7b7; font-size:.85rem; font-weight:600;">Submit to AI</span>
+                        </div>
+                        <p style="color:#7a9a8a; font-size:.8rem; margin:0; line-height:1.5;">Sends your captured question to Groq AI. The AI response is then typed live into your IDE, character by character. Conversation history is preserved for follow-ups.</p>
+                    </div>
+                    <div style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:10px; padding:14px 16px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                            <kbd style="background:#1a1a38; color:#818cf8; border:1px solid #3730a3; border-radius:6px; padding:3px 10px; font-size:.9rem; font-family:monospace; font-weight:bold;">Alt + B</kbd>
+                            <span style="color:#a5b4fc; font-size:.85rem; font-weight:600;">Ask a Follow-up</span>
+                        </div>
+                        <p style="color:#7a7a9a; font-size:.8rem; margin:0; line-height:1.5;">After receiving an answer, press <strong style="color:#818cf8;">Alt+B</strong> again and type your follow-up question. The AI remembers the full conversation so it can give context-aware answers.</p>
+                    </div>
+                    <div style="background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.2); border-radius:10px; padding:14px 16px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                            <kbd style="background:#2d1010; color:#f87171; border:1px solid #7f1d1d; border-radius:6px; padding:3px 10px; font-size:.9rem; font-family:monospace; font-weight:bold;">Alt + N</kbd>
+                            <span style="color:#fca5a5; font-size:.85rem; font-weight:600;">New Chat (Clear History)</span>
+                        </div>
+                        <p style="color:#9a7a7a; font-size:.8rem; margin:0; line-height:1.5;">Clears the entire conversation history from memory. Use this when switching to a completely different topic so the AI starts fresh without old context confusing it.</p>
+                    </div>
+                </div>
+                <div style="margin-top:16px; background:rgba(0,0,0,0.2); border-radius:8px; padding:12px 14px;">
+                    <p style="font-size:.82rem; color:#6a5a8a; margin:0; line-height:1.7;">
+                        <strong style="color:#a78bfa;">Typical workflow:</strong>
+                        Start the app → press <kbd style="background:#2d1f5e; color:#a78bfa; border:1px solid #4c3480; border-radius:4px; padding:1px 7px; font-size:.8rem;">Alt+B</kbd> → type your question → press <kbd style="background:#0d2d22; color:#34d399; border:1px solid #1a5c43; border-radius:4px; padding:1px 7px; font-size:.8rem;">Alt+G</kbd> → AI types the answer → press <kbd style="background:#1a1a38; color:#818cf8; border:1px solid #3730a3; border-radius:4px; padding:1px 7px; font-size:.8rem;">Alt+B</kbd> again for follow-ups → press <kbd style="background:#2d1010; color:#f87171; border:1px solid #7f1d1d; border-radius:4px; padding:1px 7px; font-size:.8rem;">Alt+N</kbd> when done to reset.
+                    </p>
+                </div>
             </div>
 
             <!-- Linux Installation Guide -->
