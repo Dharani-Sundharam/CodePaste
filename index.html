@@ -238,11 +238,16 @@
             <div
                 style="margin-top: 32px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 24px 28px;">
                 <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: #fff;">🐧 Linux Installation Guide</h3>
-                <p style="color: var(--text2); font-size: 0.9rem; margin-bottom: 16px;">CTpaste provides a smart installer script for Ubuntu 20.04+ and other Debian-based distros. It automatically handles compatibility checks, dependencies, download, and verification.</p>
-                <p style="color: var(--text2); font-size: 0.9rem; margin-bottom: 12px;">Just run this single command in your terminal:</p>
-                <code style="background: var(--bg2); padding: 10px 14px; border-radius: 6px; display: block; margin: 0 0 16px; color: #43e97b; font-size: .9rem; word-break: break-all;">wget -qO- https://codepasteapp.vercel.app/install.sh | bash</code>
-                <p style="color: #ffb74d; font-size: 0.85rem; margin-top: 0; margin-bottom: 0;">
-                    <em>Requires Ubuntu 20.04+ (GLIBC 2.31+). Also requires <code>xdotool</code> which the script installs automatically.</em>
+                <p style="color: var(--text2); font-size: 0.9rem; margin-bottom: 16px;">CTpaste ships as a self-contained <strong style="color:#58a6ff;">AppImage</strong> — no installation required. It runs on Ubuntu 20.04+ and any modern 64-bit Linux distro.</p>
+                <ol style="color: var(--text2); font-size: 0.9rem; line-height: 2.1; margin: 0 0 14px 18px;">
+                    <li>Download the <strong>CTpaste.AppImage</strong> file from the <a href="#download" style="color:var(--accent);">Download section</a> below.</li>
+                    <li>Open your file manager, right-click the file → <strong>Properties</strong> → <strong>Permissions</strong> → tick <em>Allow executing as program</em>.<br>
+                        <span style="color:var(--text3); font-size:.83rem;">Or run in terminal: <code style="color:#43e97b;">chmod +x CTpaste.AppImage</code></span>
+                    </li>
+                    <li>Double-click <strong>CTpaste.AppImage</strong> to launch the app — no install needed!</li>
+                </ol>
+                <p style="color: #ffb74d; font-size: 0.85rem; margin: 0;">
+                    <em>Requires Ubuntu 20.04+ / GLIBC 2.31+. Also requires <code>xdotool</code> — install with: <code style="color:#43e97b;">sudo apt install xdotool</code></em>
                 </p>
             </div>
         </div>
@@ -252,7 +257,7 @@
     <section id="download" class="alt-bg">
         <div class="container">
             <h2 class="section-title">Download</h2>
-            <p class="section-subtitle">Available for Windows. Linux version launching soon.</p>
+            <p class="section-subtitle">Available for Windows &amp; Linux. Android sync app included.</p>
 
             <div class="download-grid">
                 <!-- Windows -->
@@ -267,7 +272,7 @@
                         </svg>
                     </div>
                     <h3>Windows</h3>
-                    <p>Windows 10 / 11 — 64-bit<br>~80 MB · .exe installer</p>
+                    <p>Windows 10 / 11 — 64-bit<br>~55 MB · .exe installer</p>
                     <div id="winDownloadArea">
                         <a href="#" id="winDownloadBtn" class="btn btn-primary btn-sm" style="width:100%;"
                             onclick="handleDownload(event)">
@@ -286,11 +291,11 @@
                             style="width: 48px; height: 48px; object-fit: contain;">
                     </div>
                     <h3>Linux</h3>
-                    <p>Ubuntu / Debian — 64-bit<br>~54 MB · .deb package</p>
+                    <p>Ubuntu 20.04+ — 64-bit<br>~150 MB · .AppImage (no install)</p>
                     <div id="linuxDownloadArea">
                         <a href="#" id="linuxDownloadBtn" class="btn btn-primary btn-sm" style="width:100%;"
                             onclick="handleLinuxDownload(event)">
-                            Download .deb
+                            Download .AppImage
                         </a>
                         <p id="linuxLoginMsg" class="login-gate-msg" style="display:none;">
                             Please <a href="auth.html">login</a> to download.
@@ -433,8 +438,8 @@
                 return;
             }
             const link = document.createElement("a");
-            link.href = "ctpaste_1.0_amd64.deb";
-            link.download = "ctpaste_1.0_amd64.deb";
+            link.href = "https://github.com/Dharani-Sundharam/CodePaste/releases/download/v1.0.0/CTpaste.AppImage";
+            link.download = "CTpaste.AppImage";
             link.click();
         }
 
