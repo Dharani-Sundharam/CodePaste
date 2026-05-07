@@ -17,10 +17,11 @@ const BUCKET = FIREBASE_CONFIG.storageBucket;
 // ── Plan configs ─────────────────────────────────────
 const PLAN_CONFIG = {
     "GO": { speed: "Slow", sessionHrs: 1, cooldownHrs: 3, label: "GO (Free)" },
-    "PRO_SPEED": { speed: "Fast", sessionHrs: 1, cooldownHrs: 3, label: "PRO Speed" },
-    "PRO_HOUR": { speed: "Slow", sessionHrs: 2, cooldownHrs: 3, label: "PRO Hour" },
-    "PRO_BOTH": { speed: "Fast", sessionHrs: 2, cooldownHrs: 3, label: "PRO (Speed+Hour)" },
-    "SUPER": { speed: "Medium", sessionHrs: 3, cooldownHrs: 3, label: "SUPER" }
+    "SYNC_APP": { speed: "Slow", sessionHrs: 1, cooldownHrs: 3, label: "Phone Sync" },
+    "AI_ADDON": { speed: "Slow", sessionHrs: 1, cooldownHrs: 3, label: "AI Addon" },
+    "AI_SYNC": { speed: "Slow", sessionHrs: 1, cooldownHrs: 3, label: "AI + Phone Sync" },
+    "MEDIUM3H_AI": { speed: "Medium", sessionHrs: 3, cooldownHrs: 3, label: "Medium 3Hr + AI" },
+    "MEDIUM3H_AI_SYNC": { speed: "Medium", sessionHrs: 3, cooldownHrs: 3, label: "Medium 3Hr + AI + Sync" }
 };
 
 
@@ -226,9 +227,9 @@ async function loadDashboard(user) {
     const addons = userData.active_addons || {};
     let speed = "Slow";
     let hrs = 1;
-    let badgeText = "GO";
+    let badgeText = "BASE";
     let badgeClass = "go";
-    let planLabel = "GO (Base)";
+    let planLabel = "Base";
 
     // Check Phone Sync Expiration
     let hasSync = false;
@@ -236,24 +237,29 @@ async function loadDashboard(user) {
         hasSync = true;
     }
 
+    const hasActiveAi = (addons.ai_addon_expiry && Date.now() < addons.ai_addon_expiry);
+
     if (addons.super_pass) {
         speed = "Medium";
         hrs = 3;
-        badgeText = "SUPER";
+        badgeText = "M3H";
         badgeClass = "super";
-        planLabel = "SUPER Pass";
-        hasSync = true; // Super pass gets phone sync for free
-    } else {
-        if (addons.speed_boost) speed = "Fast";
-        if (addons.extra_hours_added) hrs += addons.extra_hours_added;
-        if (addons.speed_boost || addons.extra_hours_added) {
-            badgeText = "PRO";
-            badgeClass = "pro";
-            let p = [];
-            if (addons.speed_boost) p.push("Speed");
-            if (addons.extra_hours_added) p.push(`+${addons.extra_hours_added}Hr`);
-            planLabel = `GO with ${p.join(" & ")}`;
-        }
+        if (hasActiveAi && hasSync) planLabel = "Medium 3Hr + AI + Sync";
+        else if (hasActiveAi) planLabel = "Medium 3Hr + AI";
+        else if (hasSync) planLabel = "Medium 3Hr + Sync";
+        else planLabel = "Medium 3Hr";
+    } else if (hasActiveAi && hasSync) {
+        badgeText = "COMBO";
+        badgeClass = "pro";
+        planLabel = "AI + Phone Sync";
+    } else if (hasActiveAi) {
+        badgeText = "AI";
+        badgeClass = "pro";
+        planLabel = "AI Addon";
+    } else if (hasSync) {
+        badgeText = "SYNC";
+        badgeClass = "pro";
+        planLabel = "Phone Sync";
     }
 
     setLoggedInUser(user.rollNumber, userData.name, planLabel);
@@ -268,9 +274,9 @@ async function loadDashboard(user) {
     badge.className = "plan-badge " + (userData.suspended ? "suspended" : badgeClass);
 
     // AI Addon status
-    let aiAddonText = "Expired / Not Purchased";
+    let aiAddonText = "Inactive";
     let aiAddonColor = "#ff6b81";
-    if (addons.ai_addon_expiry && Date.now() < addons.ai_addon_expiry) {
+    if (hasActiveAi) {
         const exp = new Date(addons.ai_addon_expiry);
         aiAddonText = `Active — expires ${exp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} today`;
         aiAddonColor = "#a78bfa";
@@ -279,13 +285,12 @@ async function loadDashboard(user) {
     document.getElementById("planDetails").innerHTML = `
         <p><strong>Speed:</strong> ${speed}</p>
         <p><strong>Session length:</strong> ${hrs} hour${hrs > 1 ? "s" : ""}</p>
-        <p><strong>Phone Sync:</strong> <strong style="color:${hasSync ? '#43e97b' : '#ff6b81'}">${hasSync ? 'Active (7-Day Pass)' : 'Expired / Not Purchased'}</strong></p>
+        <p><strong>Phone Sync:</strong> <strong style="color:${hasSync ? '#43e97b' : '#ff6b81'}">${hasSync ? 'Active (7-Day Pass)' : 'Inactive'}</strong></p>
         <p><strong>AI Addon (Alt+B):</strong> <strong style="color:${aiAddonColor}">${aiAddonText}</strong></p>
         <p><strong>Cooldown:</strong> 2 hours after session ends</p>
     `;
 
     // Show AI Trial button if they haven't availed it yet, and they don't already have it
-    const hasActiveAi = (addons.ai_addon_expiry && Date.now() < addons.ai_addon_expiry);
     const aiTrialWrap = document.getElementById("aiTrialWrap");
     if (aiTrialWrap) {
         if (!userData.ai_trial_availed && !hasActiveAi) {
