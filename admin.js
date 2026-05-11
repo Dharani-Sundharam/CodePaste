@@ -140,11 +140,11 @@ function switchTab(tab) {
 
 // ── Load Dashboard ─────────────────────────────────────
 async function loadAdminDashboard() {
-    const [users, payments] = await Promise.all([
+    const [usersRaw, payments] = await Promise.all([
         fbGet("users"),
         fbGet("payment_requests")
     ]);
-    if (!users) return;
+    const users = usersRaw && typeof usersRaw === "object" ? usersRaw : {};
 
     allUsers = users;
     const entries = Object.entries(users);
@@ -256,6 +256,7 @@ function renderUsersTable(entries) {
             ? `<button class="btn btn-xs btn-green" onclick="unsuspendUser('${roll}')">Unsuspend</button>`
             : `<button class="btn btn-xs btn-red"   onclick="suspendUser('${roll}')">Suspend</button>`
         }
+                    <button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red);" onclick="deleteUserAccount(${JSON.stringify(roll)})">Delete account</button>
                 </div>
             </td>
         </tr>`;
@@ -358,6 +359,21 @@ async function unsuspendUser(roll) {
 async function resetSession(roll) {
     await fbSet(`sessions/${roll}`, null);
     flashRow(roll, "rgba(63,185,80,.1)");
+}
+
+async function deleteUserAccount(roll) {
+    if (!roll) return;
+    if (!confirm(`Permanently delete account ${roll}?\n\nThis removes their user row and session. They can be re-added later if their roll matches your rules.`)) return;
+    if (!confirm(`Confirm again: delete ${roll} from the database?`)) return;
+    try {
+        await fbSet(`sessions/${roll}`, null);
+        await fbDelete(`users/${roll}`);
+        await loadAdminDashboard();
+        const q = document.getElementById("searchInput") && document.getElementById("searchInput").value;
+        if (q) filterUsers();
+    } catch (e) {
+        alert("Delete failed: " + (e && e.message ? e.message : String(e)));
+    }
 }
 
 // ── Search / filter ────────────────────────────────────
