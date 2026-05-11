@@ -238,16 +238,18 @@
             <div
                 style="margin-top: 32px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 24px 28px;">
                 <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: #fff;">🐧 Linux Installation Guide</h3>
-                <p style="color: var(--text2); font-size: 0.9rem; margin-bottom: 16px;">CTpaste ships as a self-contained <strong style="color:#58a6ff;">AppImage</strong> — no installation required. It runs on Ubuntu 20.04+ and any modern 64-bit Linux distro.</p>
+                <p style="color: var(--text2); font-size: 0.9rem; margin-bottom: 16px;">CTpaste ships as a self-contained <strong style="color:#58a6ff;">AppImage</strong> plus a tiny launcher script. Works on <strong style="color:#58a6ff;">Ubuntu 18.04 through 24.04+</strong> and other 64-bit Debian-based desktops.</p>
                 <ol style="color: var(--text2); font-size: 0.9rem; line-height: 2.1; margin: 0 0 14px 18px;">
-                    <li>Download the <strong>CTpaste.AppImage</strong> file from the <a href="#download" style="color:var(--accent);">Download section</a> below.</li>
-                    <li>Open your file manager, right-click the file → <strong>Properties</strong> → <strong>Permissions</strong> → tick <em>Allow executing as program</em>.<br>
-                        <span style="color:var(--text3); font-size:.83rem;">Or run in terminal: <code style="color:#43e97b;">chmod +x CTpaste.AppImage</code></span>
+                    <li>Download <strong>CTpaste.AppImage</strong> <em>and</em> <strong>run-ctpaste-appimage.sh</strong> from the <a href="#download" style="color:var(--accent);">Download section</a> (same folder).</li>
+                    <li>In a terminal (recommended on Ubuntu 22.04+):
+                        <br><code style="color:#43e97b; font-size:.85rem;">chmod +x run-ctpaste-appimage.sh CTpaste.AppImage &amp;&amp; ./run-ctpaste-appimage.sh</code>
+                        <br><span style="color:var(--text3); font-size:.82rem;">The launcher enables <strong>extract-and-run</strong> mode so you do <em>not</em> need to fight <code>libfuse2</code> vs <code>libfuse3</code>.</span>
                     </li>
-                    <li>Double-click <strong>CTpaste.AppImage</strong> to launch the app — no install needed!</li>
+                    <li><strong>Optional (faster startup, native mount):</strong> <code style="color:#43e97b;">sudo apt install libfuse2</code> then double-click the AppImage like any app.</li>
+                    <li><strong>For simulated typing:</strong> <code style="color:#43e97b;">sudo apt install xdotool</code></li>
                 </ol>
                 <p style="color: #ffb74d; font-size: 0.85rem; margin: 0;">
-                    <em>Requires Ubuntu 20.04+ / GLIBC 2.31+. Also requires <code>xdotool</code> — install with: <code style="color:#43e97b;">sudo apt install xdotool</code></em>
+                    <em><strong>Alt+V hotkeys failing?</strong> Default Ubuntu uses Wayland; global shortcuts need an <strong>X11</strong> session. At login, choose “Ubuntu on Xorg” (gear icon).</em>
                 </p>
             </div>
         </div>
@@ -291,11 +293,15 @@
                             style="width: 48px; height: 48px; object-fit: contain;">
                     </div>
                     <h3>Linux</h3>
-                    <p>Ubuntu 20.04+ — 64-bit<br>~150 MB · .AppImage (no install)</p>
+                    <p>Ubuntu 18.04+ — 64-bit<br>AppImage + small launcher script (see guide above)</p>
                     <div id="linuxDownloadArea">
-                        <a href="#" id="linuxDownloadBtn" class="btn btn-primary btn-sm" style="width:100%;"
+                        <a href="#" id="linuxDownloadBtn" class="btn btn-primary btn-sm" style="width:100%; margin-bottom:8px;"
                             onclick="handleLinuxDownload(event)">
                             Download .AppImage
+                        </a>
+                        <a href="#" id="linuxLauncherBtn" class="btn btn-outline btn-sm" style="width:100%;"
+                            onclick="handleLinuxLauncherDownload(event)">
+                            Download launcher (.sh)
                         </a>
                         <p id="linuxLoginMsg" class="login-gate-msg" style="display:none;">
                             Please <a href="auth.html">login</a> to download.
@@ -435,11 +441,30 @@
             if (!user) {
                 document.getElementById("linuxLoginMsg").style.display = "block";
                 document.getElementById("linuxDownloadBtn").style.display = "none";
+                const lz = document.getElementById("linuxLauncherBtn");
+                if (lz) lz.style.display = "none";
                 return;
             }
             const link = document.createElement("a");
             link.href = "https://github.com/Dharani-Sundharam/CodePaste/releases/download/v1.0.0/CTpaste.AppImage";
             link.download = "CTpaste.AppImage";
+            link.click();
+        }
+
+        function handleLinuxLauncherDownload(e) {
+            e.preventDefault();
+            const user = localStorage.getItem("CTpaste_user");
+            if (!user) {
+                document.getElementById("linuxLoginMsg").style.display = "block";
+                document.getElementById("linuxDownloadBtn").style.display = "none";
+                const lz = document.getElementById("linuxLauncherBtn");
+                if (lz) lz.style.display = "none";
+                return;
+            }
+            const link = document.createElement("a");
+            link.href =
+                "https://raw.githubusercontent.com/Dharani-Sundharam/CodePaste/master/CTpaste-Desktop/linux/run-ctpaste-appimage.sh";
+            link.download = "run-ctpaste-appimage.sh";
             link.click();
         }
 
@@ -470,6 +495,9 @@
                     linBtn.textContent = "Login to Download";
                     linBtn.classList.replace("btn-primary", "btn-outline");
                 }
+
+                const linLaunch = document.getElementById("linuxLauncherBtn");
+                if (linLaunch) linLaunch.style.display = "none";
 
                 const andBtn = document.getElementById("androidDownloadBtn");
                 if (andBtn) {
