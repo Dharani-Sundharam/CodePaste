@@ -1,6 +1,6 @@
 /**
- * 12-digit registration: 111 + institution(5–7) + year(24|25|26) + 10 + XYYY
- * Last four XYYY: X = department (2–5), YYY = serial 001–999.
+ * 12-digit registration: 111 + institution(5–7) + year(24|25|26) + (10|11) + XYYY
+ * Last four XYYY: X = department (0–5), YYY = serial 001–999.
  */
 function validateRollNumberFormat(roll) {
     const s = String(roll == null ? "" : roll).trim();
@@ -17,11 +17,11 @@ function validateRollNumberFormat(roll) {
     if (!["24", "25", "26"].includes(yy)) {
         return { ok: false, message: "Invalid year code (use 24, 25, or 26)." };
     }
-    if (s.slice(6, 8) !== "10") {
-        return { ok: false, message: "Invalid segment (positions 7–8 must be 10)." };
+    if (!["10", "11"].includes(s.slice(6, 8))) {
+        return { ok: false, message: "Invalid segment (positions 7–8 must be 10 or 11)." };
     }
-    if (!"2345".includes(s[8])) {
-        return { ok: false, message: "Invalid department digit (use 2, 3, 4, or 5)." };
+    if (!"012345".includes(s[8])) {
+        return { ok: false, message: "Invalid department digit (use 0–5)." };
     }
     const yyy = parseInt(s.slice(9, 12), 10);
     if (yyy < 1 || yyy > 999) {
