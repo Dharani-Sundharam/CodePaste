@@ -8,19 +8,130 @@
     <link rel="icon" type="image/png" href="assets/icon.png">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* ── Dashboard mobile-first base ───────────────────── */
+        /* ── Dashboard: airy, minimal rhythm ───────────────── */
         .dash-wrap {
-            padding: 16px 16px 60px;
+            padding: clamp(22px, 5vw, 40px) clamp(18px, 4vw, 32px) 80px;
+        }
+
+        .dash-wrap .dash-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 18px;
+            padding: 8px 0 28px;
+            margin-bottom: 36px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        @media (min-width: 720px) {
+            .dash-wrap .dash-header {
+                flex-direction: row;
+                align-items: flex-end;
+                justify-content: space-between;
+            }
+        }
+
+        .dash-wrap .dash-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin: 0;
+        }
+
+        .dash-wrap #userRoll {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.86rem !important;
+            color: var(--text2);
+            line-height: 1.45;
+        }
+
+        .dash-wrap .dash-header-right {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 12px;
+            justify-content: flex-start;
+        }
+
+        @media (min-width: 720px) {
+            .dash-wrap .dash-header-right {
+                justify-content: flex-end;
+            }
+        }
+
+        .dash-wrap .stat-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-bottom: 36px;
+        }
+
+        @media (min-width: 520px) {
+            .dash-wrap .stat-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+        }
+
+        .dash-wrap .stat-card {
+            padding: 22px 20px;
+            border-radius: 14px;
+        }
+
+        .dash-wrap .stat-card .stat-label {
+            margin-bottom: 8px;
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+        }
+
+        .dash-wrap .stat-card .stat-value {
+            font-size: 1.45rem;
+        }
+
+        /* Vertical rhythm between major blocks */
+        .dash-wrap #statusMsg:not(:empty) {
+            margin-bottom: 22px;
+        }
+
+        .dash-wrap #suspendedNotice {
+            margin-bottom: 24px;
+        }
+
+        .dash-wrap > .card {
+            margin-bottom: 40px !important;
+            padding: 24px 22px;
+            border-radius: 14px;
+        }
+
+        .dash-wrap > #paymentSection {
+            margin-bottom: 40px !important;
+            padding-top: 16px;
+        }
+
+        #pendingNotice h3 {
+            color: var(--yellow) !important;
+            margin-bottom: 12px !important;
+        }
+
+        .dash-wrap .card h3 {
+            font-size: 0.92rem !important;
+            margin-bottom: 16px !important;
+            font-weight: 600;
+            color: var(--text2);
+        }
+
+        .dash-wrap #planDetails {
+            font-size: 0.9rem !important;
+            line-height: 2 !important;
         }
 
         /* ── Pay Plan Cards ─────────────────────────────────── */
         .pay-plan-card {
             position: relative;
             background: var(--bg2);
-            border: 1.5px solid var(--border);
-            border-radius: 14px;
-            padding: 16px 12px 12px;
-            min-height: 148px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px 16px 18px;
+            min-height: 132px;
             cursor: pointer;
             transition: border-color .22s ease, transform .22s ease, box-shadow .22s ease, background .22s ease;
             text-align: center;
@@ -29,6 +140,9 @@
             user-select: none;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .pay-plan-card::before {
@@ -75,20 +189,28 @@
             box-shadow: 0 0 0 2px rgba(167,139,250,.2), 0 6px 24px rgba(167,139,250,.12);
         }
 
-        .ppc-dot {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: rgba(88,166,255,.12);
-            margin: 0 auto 8px;
+        .ppc-name  {
+            font-size: .8rem;
+            font-weight: 700;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: .55px;
+            line-height: 1.25;
+            max-width: 100%;
         }
-        .ppc-ai .ppc-dot { background: rgba(167,139,250,.12); }
-        .ppc-featured .ppc-dot { background: rgba(88,166,255,.18); }
-
-        .ppc-name  { font-size: .78rem; font-weight: 700; color: var(--text); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
-        .ppc-price { font-size: 1.25rem; font-weight: 800; color: var(--accent); margin-bottom: 3px; }
+        .ppc-price {
+            font-size: 1.32rem;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+        }
         .ppc-ai .ppc-price { color: var(--purple); }
-        .ppc-desc  { font-size: .68rem; color: var(--text3); line-height: 1.4; }
+        .ppc-desc  {
+            font-size: .72rem;
+            color: var(--text3);
+            line-height: 1.45;
+        }
 
         .ppc-best-badge {
             position: absolute;
@@ -103,21 +225,42 @@
             border-radius: 20px;
         }
 
-        /* Plan cards grid — 2 cols on mobile, grows on wider screens */
+        /* Keep title clear of the "Popular" pill */
+        .ppc-featured .ppc-name {
+            max-width: calc(100% - 52px);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Plan cards — flex row, always centered as a group */
         #planCardsGrid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: stretch;
+            gap: 14px;
+            margin: 8px auto 28px;
+            max-width: 100%;
         }
-        @media (min-width: 420px) {
-            #planCardsGrid { grid-template-columns: repeat(3, 1fr); }
+        @media (min-width: 480px) {
+            #planCardsGrid { gap: 16px; margin-bottom: 32px; }
         }
-        @media (min-width: 640px) {
-            #planCardsGrid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        #planCardsGrid .pay-plan-card {
+            flex: 1 1 100px;
+            min-width: 0;
+            max-width: 168px;
         }
-        @media (min-width: 860px) {
-            #planCardsGrid { grid-template-columns: repeat(6, 1fr); }
+        @media (min-width: 480px) {
+            #planCardsGrid .pay-plan-card {
+                flex: 1 1 120px;
+                max-width: 175px;
+            }
+        }
+        @media (min-width: 900px) {
+            #planCardsGrid .pay-plan-card {
+                flex: 0 1 148px;
+                max-width: 158px;
+            }
         }
 
         /* ── QR Panel ───────────────────────────────────────── */
@@ -125,7 +268,7 @@
             from { opacity: 0; transform: translateY(-8px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        #qrPanel { animation: slideDown .28s ease; }
+        #qrPanel { animation: slideDown .28s ease; max-width: 420px; margin-left: auto; margin-right: auto; }
 
         .qr-flow-card {
             border-radius: 16px;
@@ -137,7 +280,7 @@
 
         .qr-amount-strip {
             background: linear-gradient(135deg, rgba(31,111,235,.16), rgba(88,166,255,.07));
-            padding: 18px 20px;
+            padding: 24px 22px;
             border-bottom: 1px solid rgba(88,166,255,.15);
             text-align: center;
         }
@@ -168,7 +311,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 22px 20px 16px;
+            padding: 28px 22px 22px;
         }
 
         .qr-glow-wrap {
@@ -215,25 +358,25 @@
 
         /* ── Upload section ─────────────────────────────────── */
         .upload-section {
-            padding: 0 16px 20px;
+            padding: 0 20px 26px;
         }
 
         @media (min-width: 480px) {
-            .upload-section { padding: 0 22px 22px; }
+            .upload-section { padding: 0 26px 28px; }
         }
 
         .upload-section-label {
-            font-size: .75rem;
+            font-size: .72rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: .5px;
+            letter-spacing: .55px;
             color: var(--text2);
-            margin-bottom: 10px;
+            margin-bottom: 14px;
         }
 
         .upload-zone {
-            border-radius: 12px;
-            min-height: 90px;
+            border-radius: 14px;
+            min-height: 100px;
         }
 
         .upload-preview-img {
@@ -247,14 +390,14 @@
         .ref-pill {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             background: rgba(88,166,255,.05);
             border: 1px solid rgba(88,166,255,.14);
-            border-radius: 10px;
-            padding: 10px 12px;
+            border-radius: 12px;
+            padding: 14px 14px;
             cursor: pointer;
             transition: background .2s;
-            margin-top: 12px;
+            margin-top: 18px;
         }
         .ref-pill:active { background: rgba(88,166,255,.1); }
 
@@ -273,10 +416,10 @@
         /* ── Submit button ──────────────────────────────────── */
         #submitPaymentBtn {
             width: 100%;
-            margin-top: 14px;
-            padding: 14px;
-            font-size: .95rem;
-            border-radius: 12px;
+            margin-top: 22px;
+            padding: 16px 18px;
+            font-size: 0.94rem;
+            border-radius: 14px;
             background: linear-gradient(135deg, var(--accent-d), var(--accent));
             box-shadow: 0 4px 16px rgba(31,111,235,.28);
             transition: box-shadow .25s, transform .2s, opacity .2s;
@@ -299,11 +442,28 @@
         /* ── Payment section header ─────────────────────────── */
         .pay-header {
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .pay-header h2 {
+            font-size: 1.12rem !important;
+            font-weight: 700 !important;
+            margin: 0 0 8px 0 !important;
+            color: var(--text) !important;
+            letter-spacing: -0.02em;
+        }
+
+        .pay-header p {
+            margin: 0;
+            font-size: 0.84rem !important;
+            color: var(--text2) !important;
+            line-height: 1.5;
+            max-width: 28rem;
         }
 
         .pay-header-secure {
@@ -320,29 +480,17 @@
             flex-shrink: 0;
         }
 
-        /* ── General mobile tweaks ──────────────────────────── */
-        .stat-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        @media (min-width: 520px) {
-            .stat-grid { grid-template-columns: repeat(4, 1fr); }
-        }
-
-        .dash-header {
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
+        /* ── General mobile tweaks (dashboard page) ─────────── */
         .btn-sm {
-            padding: 7px 14px;
-            font-size: .82rem;
+            padding: 8px 16px;
+            font-size: 0.84rem;
         }
 
         /* Prevent overflow on mobile */
         body { overflow-x: hidden; }
 
-        /* Larger touch targets for buttons */
-        .btn { min-height: 40px; }
+        /* Comfortable tap targets without crowding */
+        .dash-wrap .btn { min-height: 42px; }
     </style>
 </head>
 
@@ -358,10 +506,9 @@
         <div class="dash-header">
             <div>
                 <h1>My Dashboard</h1>
-                <span id="userRoll" style="color:var(--text2); font-size:.82rem;"></span>
+                <span id="userRoll"></span>
             </div>
             <div class="dash-header-right">
-                <span id="planBadge" class="plan-badge go">GO</span>
                 <a href="index.html" class="btn btn-outline btn-sm">Home</a>
                 <a href="index.html#download" class="btn btn-sm" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; border:none; font-weight:700;">⬇ Download Now</a>
                 <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
@@ -397,29 +544,29 @@
         </div>
 
         <!-- Pending payment notice -->
-        <div id="pendingNotice" class="card" style="margin-bottom:24px; display:none; border-color:var(--yellow);">
-            <h3 style="font-size:.95rem; color:var(--yellow); margin-bottom:8px;">Payment Under Review</h3>
-            <p style="font-size:.88rem; color:var(--text2);">
+        <div id="pendingNotice" class="card" style="display:none; border-color:var(--yellow);">
+            <h3>Payment Under Review</h3>
+            <p style="font-size:.88rem; color:var(--text2); line-height:1.55;">
                 Your payment screenshot for <strong id="pendingPlanName"></strong> has been submitted and is pending
                 admin approval. Once approved, the plan will activate on your next app login.
             </p>
-            <p id="pendingSubmittedAt" style="font-size:.8rem; color:var(--text3); margin-top:8px;"></p>
+            <p id="pendingSubmittedAt" style="font-size:.8rem; color:var(--text3); margin-top:12px;"></p>
         </div>
 
         <!-- Plan Details -->
-        <div class="card" style="margin-bottom:24px;">
-            <h3 style="font-size:.95rem; color:var(--text2); margin-bottom:14px;">Plan Details</h3>
-            <div id="planDetails" style="font-size:.9rem; line-height:1.9;"></div>
+        <div class="card">
+            <h3>Plan Details</h3>
+            <div id="planDetails"></div>
         </div>
 
         <!-- Payment Section -->
-        <div id="paymentSection" style="margin-bottom:24px;">
+        <div id="paymentSection">
 
             <!-- Header -->
             <div class="pay-header">
                 <div>
-                    <h2 style="font-size:1.05rem; font-weight:700; color:var(--text); margin-bottom:3px;">Upgrade Your Plan</h2>
-                    <p style="font-size:.8rem; color:var(--text2);">Pay via UPI — activated after admin approval</p>
+                    <h2>Upgrade Your Plan</h2>
+                    <p>Pay via UPI — activated after admin approval</p>
                 </div>
                 <span class="pay-header-secure">Secure</span>
             </div>
@@ -428,28 +575,24 @@
             <div id="planCardsGrid">
 
                 <div class="pay-plan-card" data-value="SYNC_APP:35" onclick="selectPlanCard(this)">
-                    <div class="ppc-dot"></div>
                     <div class="ppc-name">Phone Sync</div>
                     <div class="ppc-price">&#8377;35</div>
                     <div class="ppc-desc">Sync only · 7d</div>
                 </div>
 
                 <div class="pay-plan-card ppc-ai" data-value="AI_ADDON:45" onclick="selectPlanCard(this)">
-                    <div class="ppc-dot"></div>
                     <div class="ppc-name">AI Addon</div>
                     <div class="ppc-price">&#8377;45</div>
                     <div class="ppc-desc">AI only · EOD</div>
                 </div>
 
                 <div class="pay-plan-card" data-value="AI_SYNC:59" onclick="selectPlanCard(this)">
-                    <div class="ppc-dot"></div>
                     <div class="ppc-name">AI + Sync</div>
                     <div class="ppc-price">&#8377;59</div>
                     <div class="ppc-desc">Combo pack</div>
                 </div>
 
                 <div class="pay-plan-card ppc-featured" data-value="MEDIUM3H_AI:119" onclick="selectPlanCard(this)">
-                    <div class="ppc-dot"></div>
                     <div class="ppc-name">Medium 3hr + AI</div>
                     <div class="ppc-price">&#8377;119</div>
                     <div class="ppc-desc">Medium + AI</div>
@@ -457,7 +600,6 @@
                 </div>
 
                 <div class="pay-plan-card ppc-ai" data-value="MEDIUM3H_AI_SYNC:129" onclick="selectPlanCard(this)">
-                    <div class="ppc-dot"></div>
                     <div class="ppc-name">Medium 3hr + AI + Sync</div>
                     <div class="ppc-price">&#8377;129</div>
                     <div class="ppc-desc">Full combo</div>
@@ -549,9 +691,7 @@
             loadDashboard(user);
         })();
 
-        // ── WhatsApp notification config ──────────────────────
-        const WHATSAPP_PHONE = "+919626262428";
-        const WHATSAPP_APIKEY = "4667147";
+        // CallMeBot phone + apikey: defined once in app.js (do not redeclare const here — breaks this whole script).
 
         function notifyWhatsApp(roll, name, plan, amount) {
             const msg = encodeURIComponent(

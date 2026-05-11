@@ -390,11 +390,12 @@
 </footer>
 
 <script>
-    document.querySelectorAll(".pricing-buy").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            const destination = localStorage.getItem("CTpaste_user") ? "dashboard.html" : "auth.html";
-            window.location.href = destination;
+    /* Buy buttons: send logged-in users to the dashboard; never intercept real download links. */
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("#pricing a.pricing-buy").forEach(function (a) {
+            if (localStorage.getItem("CTpaste_user")) {
+                a.href = "dashboard.html";
+            }
         });
     });
 </script>

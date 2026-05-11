@@ -295,8 +295,6 @@ async function loadDashboard(user) {
     const addons = userData.active_addons || {};
     let speed = "Slow";
     let hrs = 1;
-    let badgeText = "BASE";
-    let badgeClass = "go";
     let planLabel = "Base";
 
     // Check Phone Sync Expiration
@@ -310,23 +308,15 @@ async function loadDashboard(user) {
     if (addons.super_pass) {
         speed = "Medium";
         hrs = 3;
-        badgeText = "M3H";
-        badgeClass = "super";
         if (hasActiveAi && hasSync) planLabel = "Medium 3Hr + AI + Sync";
         else if (hasActiveAi) planLabel = "Medium 3Hr + AI";
         else if (hasSync) planLabel = "Medium 3Hr + Sync";
         else planLabel = "Medium 3Hr";
     } else if (hasActiveAi && hasSync) {
-        badgeText = "COMBO";
-        badgeClass = "pro";
         planLabel = "AI + Phone Sync";
     } else if (hasActiveAi) {
-        badgeText = "AI";
-        badgeClass = "pro";
         planLabel = "AI Addon";
     } else if (hasSync) {
-        badgeText = "SYNC";
-        badgeClass = "pro";
         planLabel = "Phone Sync";
     }
 
@@ -336,10 +326,6 @@ async function loadDashboard(user) {
     document.getElementById("planName").textContent = planLabel;
     document.getElementById("planSpeed").textContent = speed;
     document.getElementById("planDuration").textContent = hrs + " hr" + (hrs > 1 ? "s" : "");
-
-    const badge = document.getElementById("planBadge");
-    badge.textContent = badgeText;
-    badge.className = "plan-badge " + (userData.suspended ? "suspended" : badgeClass);
 
     // AI Addon status
     let aiAddonText = "Inactive";
