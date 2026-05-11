@@ -4,509 +4,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="CTpaste — Stealth typing engine for students. Type code into any IDE naturally.">
+    <meta name="description" content="CTpaste — Stealth typing engine for students. Type code into any IDE naturally, character by character.">
     <title>CTpaste — Stealth Typing Engine</title>
     <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container">
-            <a href="#" class="nav-brand"><img src="assets/icon.png" alt="CTpaste"
-                    style="height: 28px; vertical-align: middle; margin-right: 10px; border-radius: 6px;">CTpaste</a>
-            <ul class="nav-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#guide">Guide</a></li>
-                <li><a href="#download">Download</a></li>
-                <li><a href="#pricing">Plans</a></li>
-                <li><a href="auth.html" class="nav-cta">Login / Sign Up</a></li>
-            </ul>
-        </div>
-    </nav>
+<!-- ═══════════════ NAVBAR ═══════════════ -->
+<nav class="navbar">
+    <div class="container nav-inner">
+        <a href="#" class="nav-brand">
+            <img src="assets/icon.png" alt="CTpaste logo">
+            CTpaste
+        </a>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#guide">Guide</a></li>
+            <li><a href="#download">Download</a></li>
+            <li><a href="#pricing">Plans</a></li>
+        </ul>
+        <a href="auth.html" class="nav-cta">Login / Sign Up</a>
+    </div>
+</nav>
 
-    <!-- Hero -->
-    <section class="hero">
-        <div class="container">
-            <h1>Code Smarter.<br>Type Naturally.</h1>
-            <p class="subtitle">
-                CTpaste simulates real keystrokes so your code appears typed live in any IDE —
-                character by character, with human-like speed and timing.
-            </p>
-            <div class="hero-buttons">
-                <a href="#download" class="btn btn-primary">Get the App</a>
-                <a href="#guide" class="btn btn-outline">See How it Works</a>
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero">
+    <div class="hero-glow"></div>
+    <div class="container hero-inner">
+        <div class="hero-eyebrow">🚀 Now with AI Assist</div>
+        <h1>Code Smarter.<br><span class="hero-gradient">Type Naturally.</span></h1>
+        <p class="hero-sub">
+            CTpaste simulates real keystrokes so your code appears typed live in any IDE —
+            character by character, with human-like speed and timing.
+        </p>
+        <div class="hero-actions">
+            <a href="#download" class="btn btn-primary btn-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Get the App
+            </a>
+            <a href="#guide" class="btn btn-ghost btn-lg">See How it Works →</a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat"><span>3</span> Speed Modes</div>
+            <div class="hero-stat-div"></div>
+            <div class="hero-stat"><span>Windows &amp; Linux</span></div>
+            <div class="hero-stat-div"></div>
+            <div class="hero-stat"><span>AI</span> Powered</div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ FEATURES ═══════════════ -->
+<section id="features" class="section-alt">
+    <div class="container">
+        <div class="section-header">
+            <h2>Why CTpaste?</h2>
+            <p>Everything a student needs to type code instantly and naturally into any IDE.</p>
+        </div>
+
+        <div class="features-grid">
+
+            <div class="feature-card">
+                <div class="feature-icon-wrap">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                </div>
+                <h3>Real Keystrokes</h3>
+                <p>Sends input via the system API — indistinguishable from manual typing at the OS level. No macros, no paste.</p>
             </div>
-        </div>
-    </section>
 
-    <!-- Features -->
-    <section id="features" class="alt-bg">
-        <div class="container">
-            <h2 class="section-title">Why CTpaste?</h2>
-            <p class="section-subtitle">Everything a student needs, nothing they don't.</p>
-            <div class="features-grid">
-                <div class="card">
-                    <div class="feature-icon" style="font-family: serif; font-style: italic;">I</div>
-                    <h3 class="feature-title">Real Keystrokes</h3>
-                    <p class="feature-desc">Sends input via the Windows API — indistinguishable from manual typing at
-                        the system level.</p>
+            <div class="feature-card">
+                <div class="feature-icon-wrap">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 </div>
-                <div class="card">
-                    <div class="feature-icon" style="font-family: serif; font-style: italic;">II</div>
-                    <h3 class="feature-title">3 Speed Modes</h3>
-                    <p class="feature-desc">Slow, Medium, or Fast — with natural random delays that mimic real human
-                        typing rhythm.</p>
-                </div>
-                <div class="card">
-                    <div class="feature-icon" style="font-family: serif; font-style: italic;">III</div>
-                    <h3 class="feature-title">IDE-Aware</h3>
-                    <p class="feature-desc">Handles auto-closing tags, brackets, and Python indentation automatically
-                        without skipping a beat.</p>
-                </div>
-                <div class="card">
-                    <div class="feature-icon" style="font-family: serif; font-style: italic;">IV</div>
-                    <h3 class="feature-title">Phone Sync</h3>
-                    <p class="feature-desc">Copy code on your phone. It instantly appears on your PC via Firebase sync —
-                        no USB needed.</p>
-                </div>
-                <div class="card" style="border-color: rgba(139,92,246,0.35); background: linear-gradient(135deg,#1a1a2e,#200f2e);">
-                    <div class="feature-icon" style="background: linear-gradient(135deg,#7c3aed,#a855f7); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-size:1.5rem;">V</div>
-                    <h3 class="feature-title" style="color:#c084fc;">AI Assist <span style="font-size:.65rem;background:#7c3aed;color:#fff;border-radius:5px;padding:1px 6px;vertical-align:middle;">NEW</span></h3>
-                    <p class="feature-desc">Three-hotkey AI workflow: <code>Alt+B</code> to capture your question, <code>Alt+G</code> to submit it, and <code>Alt+N</code> to clear history and start fresh. Full conversation memory built in.</p>
-                </div>
+                <h3>3 Speed Modes</h3>
+                <p>Slow, Medium, or Fast — with natural random delays that mimic real human typing rhythm so it never looks robotic.</p>
             </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrap">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                </div>
+                <h3>IDE-Aware</h3>
+                <p>Handles auto-closing brackets, HTML tags, and Python indentation automatically. Works with VS Code, IntelliJ, Eclipse, and more.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrap">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                </div>
+                <h3>Phone Sync</h3>
+                <p>Copy code on your phone, it instantly appears on your PC via Firebase — no USB, no cable, no friction.</p>
+            </div>
+
+            <div class="feature-card feature-card-ai">
+                <div class="feature-icon-wrap feature-icon-ai">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/><path d="M18.5 2.5l3 3-3 3"/><path d="M21.5 5.5h-5"/></svg>
+                </div>
+                <div class="feature-badge-row">
+                    <h3>AI Assist</h3>
+                    <span class="badge-new">NEW</span>
+                </div>
+                <p>Three-hotkey AI workflow: <code>Alt+B</code> to capture, <code>Alt+G</code> to submit, <code>Alt+N</code> to reset. Full conversation memory built in — powered by Groq.</p>
+            </div>
+
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- How to Use — Detailed Guide -->
-    <section id="guide">
-        <div class="container">
-            <h2 class="section-title">Detailed Usage Guide</h2>
-            <p class="section-subtitle">Follow these steps exactly for the best experience.</p>
+<!-- ═══════════════ GUIDE ═══════════════ -->
+<section id="guide">
+    <div class="container">
+        <div class="section-header">
+            <h2>How to Use CTpaste</h2>
+            <p>Quick start: download, sign in, run, and type with Alt+V.</p>
+        </div>
 
-            <!-- Requirements -->
-            <div class="req-box">
+        <!-- Requirements -->
+        <div class="req-box">
+            <div class="req-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div>
                 <h4>Before You Start</h4>
                 <ul>
-                    <li>Windows 10 or 11 (64-bit) for the desktop app</li>
-                    <li>Your roll number account created on this website</li>
-                    <li>Your IDE open and ready (VS Code, IntelliJ, Eclipse etc.)</li>
-                    <li>An active plan session (check your dashboard)</li>
+                    <li>Windows 10 / 11 (64-bit) or Ubuntu 20.04+ for the desktop app</li>
+                    <li>A CTpaste account (create one in under a minute)</li>
+                    <li>Your IDE open and ready (VS Code, IntelliJ, Eclipse, etc.)</li>
                 </ul>
-            </div>
-
-            <div class="steps-grid">
-                <div class="card step-card">
-                    <div class="step-num">1</div>
-                    <h3>Login &amp; Download</h3>
-                    <p>Create your account using your roll number on the <a href="auth.html">Login page</a>. Then
-                        download the app from the <a href="#download">Download section</a>. You must be logged in to
-                        download.</p>
-                </div>
-
-                <div class="card step-card">
-                    <div class="step-num">2</div>
-                    <h3>Launch the App</h3>
-                    <p>Open <code>CTpaste.exe</code>. A login screen will appear. Enter your roll number and password.
-                        The app checks your plan and starts the session timer.</p>
-                </div>
-
-                <div class="card step-card">
-                    <div class="step-num">3</div>
-                    <h3>Click "Start"</h3>
-                    <p>Press the Start button in the app. The status turns green — <em>"Running — Alt+V to paste"</em>.
-                        The keyboard hotkey is now active. Minimise the app.</p>
-                </div>
-
-                <div class="card step-card">
-                    <div class="step-num">4</div>
-                    <h3>Copy Your Code</h3>
-                    <p>Copy any code with <code>Ctrl+C</code> — from a browser, a file, or send it from your phone using
-                        the Phone Sync feature in the app.</p>
-                </div>
-
-                <div class="card step-card">
-                    <div class="step-num">5</div>
-                    <h3>Switch to Your IDE</h3>
-                    <p>Open your IDE (VS Code, IntelliJ, etc.). Click inside the editor to place your cursor at the
-                        right position. Make sure the file is in edit mode.</p>
-                </div>
-
-                <div class="card step-card">
-                    <div class="step-num">6</div>
-                    <h3>Press Alt+V to Paste</h3>
-                    <p>Press <code>Alt + V</code>. CTpaste will start typing the code character by character. Don't
-                        press any keys while it's typing. Wait for it to finish.</p>
-                </div>
-
-                <div class="card step-card">
-                    <div class="step-num">7</div>
-                    <h3>IDE Auto-Completion</h3>
-                    <p>If your IDE auto-completes tags (e.g. types <code>&lt;/div&gt;</code> automatically), CTpaste
-                        detects this and skips duplicates. Works with HTML, Python, Java, and more.</p>
-                </div>
-
-                <div class="card step-card">
-                    <div class="step-num">8</div>
-                    <h3>Session &amp; Cooldown</h3>
-                    <p>Your plan gives you a fixed session time (1–3 hrs). When it expires, the app locks. After a
-                        3-hour cooldown, your session automatically resets and you can use it again.</p>
-                </div>
-
-                <div class="card step-card">
-                    <div class="step-num">9</div>
-                    <h3>Phone Sync</h3>
-                    <p>Open the CTpaste Android app, log in with your Roll Number and Password, and tap "Login & Sync".
-                        Any text you copy on your phone instantly syncs to your logged-in PC!</p>
-                </div>
-
-                <div class="card step-card" style="border-color:rgba(139,92,246,0.4);">
-                    <div class="step-num" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">10</div>
-                    <h3 style="color:#c084fc;">AI Assist <span style="font-size:.6rem;background:#7c3aed;color:#fff;border-radius:4px;padding:1px 5px;vertical-align:middle;">AI Addon</span></h3>
-                    <p>Purchase the <strong>AI Addon</strong> (₹50/day) from your dashboard. Expand the <em>AI Assist</em> card, paste your free <a href="https://console.groq.com" target="_blank" style="color:var(--accent);">Groq API key</a>, click <strong>Verify</strong> then <strong>Save</strong>. Then use the three-step hotkey flow below:</p>
-                    <ol style="margin: 10px 0 0 18px; font-size:.87rem; color:var(--text2); line-height:2.1;">
-                        <li><code>Alt+B</code> — start typing your question (keylogger captures every key you press)</li>
-                        <li><code>Alt+G</code> — submit the captured question to Groq AI; the answer is typed live into your IDE</li>
-                        <li><code>Alt+B</code> again — ask a follow-up; conversation history is remembered automatically</li>
-                        <li><code>Alt+N</code> — clear all history and start a completely fresh conversation</li>
-                    </ol>
-                    <p style="margin-top:10px; font-size:.82rem; color:#9d8fc8;">💡 The app shows how many turns are in memory in the status bar (e.g. <em>[2 turn(s) in memory]</em>). Press <code>Alt+N</code> any time to reset.</p>
-                </div>
-            </div>
-
-            <!-- Tips -->
-            <div
-                style="margin-top: 32px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--rl); padding: 24px 28px;">
-                <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--accent);">Tips &amp; Tricks</h3>
-                <ul style="list-style: none; font-size: .88rem; color: var(--text2); line-height: 2;">
-                    <li>→ Minimise the app to system tray while it's typing — it works in the background</li>
-                    <li>→ Use "Slow" speed if the IDE is lagging or missing characters</li>
-                    <li>→ For Python: indentation is handled automatically — just copy the code as-is</li>
-                    <li>→ If typing stops unexpectedly, click "Stop" then "Start" and press Alt+V again</li>
-                    <li>→ Your session timer continues even if you close and reopen the app</li>
-                    <li>→ <strong style="color:var(--accent);">AI follow-ups:</strong> After the first answer, press <code>Alt+B</code> again to ask more — the AI remembers the full conversation</li>
-                    <li>→ <strong style="color:var(--accent);">New topic?</strong> Press <code>Alt+N</code> to wipe history and start a fresh chat with no old context</li>
-                </ul>
-            </div>
-
-            <!-- AI Shortcut Cheat-Sheet -->
-            <div id="ai-shortcuts" style="margin-top: 20px; background: linear-gradient(135deg,#1a1a2e,#1e0f30); border: 1px solid rgba(139,92,246,0.35); border-radius: var(--rl); padding: 24px 28px;">
-                <h3 style="font-size: 1rem; margin-bottom: 6px; color: #c084fc;">🤖 AI Assist — Keyboard Shortcuts</h3>
-                <p style="font-size:.82rem; color:#7a6a9a; margin-bottom:18px;">Requires the AI Addon. Make sure the app is running (green status) and your Groq API key is saved.</p>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                    <div style="background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.25); border-radius:10px; padding:14px 16px;">
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                            <kbd style="background:#2d1f5e; color:#a78bfa; border:1px solid #4c3480; border-radius:6px; padding:3px 10px; font-size:.9rem; font-family:monospace; font-weight:bold;">Alt + B</kbd>
-                            <span style="color:#c084fc; font-size:.85rem; font-weight:600;">Capture Question</span>
-                        </div>
-                        <p style="color:#7a6a9a; font-size:.8rem; margin:0; line-height:1.5;">Switch focus to your IDE, then press <strong style="color:#a78bfa;">Alt+B</strong> and start typing your question directly. Everything you type is captured. Press <strong style="color:#a78bfa;">Alt+G</strong> when done.</p>
-                    </div>
-                    <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:10px; padding:14px 16px;">
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                            <kbd style="background:#0d2d22; color:#34d399; border:1px solid #1a5c43; border-radius:6px; padding:3px 10px; font-size:.9rem; font-family:monospace; font-weight:bold;">Alt + G</kbd>
-                            <span style="color:#6ee7b7; font-size:.85rem; font-weight:600;">Submit to AI</span>
-                        </div>
-                        <p style="color:#7a9a8a; font-size:.8rem; margin:0; line-height:1.5;">Sends your captured question to Groq AI. The AI response is then typed live into your IDE, character by character. Conversation history is preserved for follow-ups.</p>
-                    </div>
-                    <div style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:10px; padding:14px 16px;">
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                            <kbd style="background:#1a1a38; color:#818cf8; border:1px solid #3730a3; border-radius:6px; padding:3px 10px; font-size:.9rem; font-family:monospace; font-weight:bold;">Alt + B</kbd>
-                            <span style="color:#a5b4fc; font-size:.85rem; font-weight:600;">Ask a Follow-up</span>
-                        </div>
-                        <p style="color:#7a7a9a; font-size:.8rem; margin:0; line-height:1.5;">After receiving an answer, press <strong style="color:#818cf8;">Alt+B</strong> again and type your follow-up question. The AI remembers the full conversation so it can give context-aware answers.</p>
-                    </div>
-                    <div style="background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.2); border-radius:10px; padding:14px 16px;">
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                            <kbd style="background:#2d1010; color:#f87171; border:1px solid #7f1d1d; border-radius:6px; padding:3px 10px; font-size:.9rem; font-family:monospace; font-weight:bold;">Alt + N</kbd>
-                            <span style="color:#fca5a5; font-size:.85rem; font-weight:600;">New Chat (Clear History)</span>
-                        </div>
-                        <p style="color:#9a7a7a; font-size:.8rem; margin:0; line-height:1.5;">Clears the entire conversation history from memory. Use this when switching to a completely different topic so the AI starts fresh without old context confusing it.</p>
-                    </div>
-                </div>
-                <div style="margin-top:16px; background:rgba(0,0,0,0.2); border-radius:8px; padding:12px 14px;">
-                    <p style="font-size:.82rem; color:#6a5a8a; margin:0; line-height:1.7;">
-                        <strong style="color:#a78bfa;">Typical workflow:</strong>
-                        Start the app → press <kbd style="background:#2d1f5e; color:#a78bfa; border:1px solid #4c3480; border-radius:4px; padding:1px 7px; font-size:.8rem;">Alt+B</kbd> → type your question → press <kbd style="background:#0d2d22; color:#34d399; border:1px solid #1a5c43; border-radius:4px; padding:1px 7px; font-size:.8rem;">Alt+G</kbd> → AI types the answer → press <kbd style="background:#1a1a38; color:#818cf8; border:1px solid #3730a3; border-radius:4px; padding:1px 7px; font-size:.8rem;">Alt+B</kbd> again for follow-ups → press <kbd style="background:#2d1010; color:#f87171; border:1px solid #7f1d1d; border-radius:4px; padding:1px 7px; font-size:.8rem;">Alt+N</kbd> when done to reset.
-                    </p>
-                </div>
-            </div>
-
-            <!-- Linux Installation Guide -->
-            <div
-                style="margin-top: 32px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 24px 28px;">
-                <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: #fff;">🐧 Linux Installation Guide</h3>
-                <p style="color: var(--text2); font-size: 0.9rem; margin-bottom: 16px;">CTpaste ships as a self-contained <strong style="color:#58a6ff;">AppImage</strong> plus a tiny launcher script. Works on <strong style="color:#58a6ff;">Ubuntu 18.04 through 24.04+</strong> and other 64-bit Debian-based desktops.</p>
-                <ol style="color: var(--text2); font-size: 0.9rem; line-height: 2.1; margin: 0 0 14px 18px;">
-                    <li>Download <strong>CTpaste.AppImage</strong> <em>and</em> <strong>run-ctpaste-appimage.sh</strong> from the <a href="#download" style="color:var(--accent);">Download section</a> (same folder).</li>
-                    <li>In a terminal (recommended on Ubuntu 22.04+):
-                        <br><code style="color:#43e97b; font-size:.85rem;">chmod +x run-ctpaste-appimage.sh CTpaste.AppImage &amp;&amp; ./run-ctpaste-appimage.sh</code>
-                        <br><span style="color:var(--text3); font-size:.82rem;">The launcher enables <strong>extract-and-run</strong> mode so you do <em>not</em> need to fight <code>libfuse2</code> vs <code>libfuse3</code>.</span>
-                    </li>
-                    <li><strong>Optional (faster startup, native mount):</strong> <code style="color:#43e97b;">sudo apt install libfuse2</code> then double-click the AppImage like any app.</li>
-                    <li><strong>For simulated typing:</strong> <code style="color:#43e97b;">sudo apt install xdotool</code></li>
-                </ol>
-                <p style="color: #ffb74d; font-size: 0.85rem; margin: 0;">
-                    <em><strong>Alt+V hotkeys failing?</strong> Default Ubuntu uses Wayland; global shortcuts need an <strong>X11</strong> session. At login, choose “Ubuntu on Xorg” (gear icon).</em>
-                </p>
             </div>
         </div>
-    </section>
 
-    <!-- Download -->
-    <section id="download" class="alt-bg">
-        <div class="container">
-            <h2 class="section-title">Download</h2>
-            <p class="section-subtitle">Available for Windows &amp; Linux. Android sync app included.</p>
+        <!-- Timeline Steps -->
+        <div class="timeline">
 
-            <div class="download-grid">
-                <!-- Windows -->
-                <div class="card download-card">
-                    <div class="os-logo">
-                        <!-- Windows logo SVG -->
-                        <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="4" y="4" width="37" height="37" rx="3" fill="#F35325" />
-                            <rect x="47" y="4" width="37" height="37" rx="3" fill="#81BC06" />
-                            <rect x="4" y="47" width="37" height="37" rx="3" fill="#05A6F0" />
-                            <rect x="47" y="47" width="37" height="37" rx="3" fill="#FFBA08" />
-                        </svg>
+            <div class="timeline-item">
+                <div class="timeline-marker">1</div>
+                <div class="timeline-content">
+                    <h3>Download the App</h3>
+                    <p>Choose your platform from the <a href="#download">Download section</a> below and install or open the app.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">2</div>
+                <div class="timeline-content">
+                    <h3>Create Account &amp; Sign In</h3>
+                    <p>Go to the <a href="auth.html">Login page</a>, create your account with roll number, then sign in from the app.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">3</div>
+                <div class="timeline-content">
+                    <h3>Start Session</h3>
+                    <p>Open <code>CTpaste.exe</code> or <code>CTpaste.AppImage</code>, log in, and click <strong>Start</strong> so the app is ready.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">4</div>
+                <div class="timeline-content">
+                    <h3>Copy, Focus, Press Alt+V</h3>
+                    <p>Copy code with <code>Ctrl+C</code>, place your cursor in the IDE, then press <code>Alt+V</code>. CTpaste types it naturally in real time.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item timeline-item-ai">
+                <div class="timeline-marker timeline-marker-ai">AI</div>
+                <div class="timeline-content">
+                    <h3>AI Assist <span class="badge-ai-addon">Addon</span></h3>
+                    <p>Purchase the <strong>AI Addon</strong> (₹45/day) from your dashboard. Open the <em>AI Assist</em> card, paste your free <a href="https://console.groq.com" target="_blank">Groq API key</a>, click <strong>Verify → Save</strong>. Then use these hotkeys:</p>
+                    <div class="ai-hotkey-list">
+                        <div class="ai-hotkey"><kbd class="kbd-purple">Alt+B</kbd><span>Start capturing your question — type freely in your IDE</span></div>
+                        <div class="ai-hotkey"><kbd class="kbd-green">Alt+G</kbd><span>Submit to Groq AI — answer is typed live into your IDE</span></div>
+                        <div class="ai-hotkey"><kbd class="kbd-indigo">Alt+B</kbd><span>Ask a follow-up — conversation history is preserved</span></div>
+                        <div class="ai-hotkey"><kbd class="kbd-red">Alt+N</kbd><span>Clear history and start a completely fresh conversation</span></div>
                     </div>
+                    <p class="ai-tip-note">💡 The status bar shows how many turns are in memory, e.g. <em>[2 turn(s) in memory]</em>. Press <code>Alt+N</code> any time to reset.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Tips -->
+        <div class="tips-box">
+            <h3>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Tips &amp; Tricks
+            </h3>
+            <ul>
+                <li>Use <strong>Slow</strong> speed if your IDE misses characters</li>
+                <li>Do not type while CTpaste is running a paste action</li>
+                <li>For phone sync, log in on Android and tap <strong>Login &amp; Sync</strong></li>
+                <li>If typing pauses, click <strong>Stop → Start</strong> and try <code>Alt+V</code> again</li>
+            </ul>
+        </div>
+
+        <!-- Linux Guide -->
+        <div class="linux-guide">
+            <h3>🐧 Linux Installation Guide</h3>
+            <p>CTpaste ships as a self-contained <strong class="text-accent">AppImage</strong> — no installation, no dependencies (except <code>xdotool</code>).</p>
+            <ol>
+                <li>Download <strong>CTpaste.AppImage</strong> from the <a href="#download">Download section</a>.</li>
+                <li>Make it executable — right-click → <strong>Properties → Permissions → Allow executing as program</strong>,
+                    or run: <code class="code-green">chmod +x CTpaste.AppImage</code></li>
+                <li>Double-click to launch — no install needed!</li>
+            </ol>
+            <div class="linux-tutorial-wrap">
+                <p class="linux-tutorial-title">Quick walkthrough:</p>
+                <img src="assets/tutorial.gif" alt="Linux AppImage install tutorial" class="linux-tutorial-gif">
+            </div>
+            <p class="warning-note">⚠ Requires Ubuntu 20.04+ / GLIBC 2.31+. Install xdotool first: <code class="code-green">sudo apt install xdotool</code></p>
+        </div>
+
+    </div>
+</section>
+
+<!-- ═══════════════ DOWNLOAD ═══════════════ -->
+<section id="download" class="section-alt">
+    <div class="container">
+        <div class="section-header">
+            <h2>Download</h2>
+            <p>Available for Windows &amp; Linux. Android sync companion included.</p>
+            <p class="download-note">Downloads are open. If you are new, please <a href="auth.html">create an account</a> before starting a session.</p>
+        </div>
+
+        <div class="download-grid">
+
+            <div class="download-card">
+                <div class="download-os-icon">
+                    <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" width="52" height="52">
+                        <rect x="4"  y="4"  width="37" height="37" rx="3" fill="#F35325"/>
+                        <rect x="47" y="4"  width="37" height="37" rx="3" fill="#81BC06"/>
+                        <rect x="4"  y="47" width="37" height="37" rx="3" fill="#05A6F0"/>
+                        <rect x="47" y="47" width="37" height="37" rx="3" fill="#FFBA08"/>
+                    </svg>
+                </div>
+                <div class="download-info">
                     <h3>Windows</h3>
-                    <p>Windows 10 / 11 — 64-bit<br>~55 MB · .exe installer</p>
-                    <div id="winDownloadArea">
-                        <a href="#" id="winDownloadBtn" class="btn btn-primary btn-sm" style="width:100%;"
-                            onclick="handleDownload(event)">
-                            Download .exe
-                        </a>
-                        <p id="winLoginMsg" class="login-gate-msg" style="display:none;">
-                            Please <a href="auth.html">login</a> to download.
-                        </p>
-                    </div>
+                    <span class="download-meta">Windows 10 / 11 · 64-bit · ~55 MB · .exe</span>
                 </div>
+                <div id="winDownloadArea">
+                    <a href="https://github.com/Dharani-Sundharam/CodePaste/releases/download/v1.0.0/CTpaste.exe" id="winDownloadBtn" class="btn btn-primary btn-sm btn-full">Download .exe</a>
+                </div>
+            </div>
 
-                <!-- Linux -->
-                <div class="card download-card">
-                    <div class="os-logo">
-                        <img src="assets/Linux.png" alt="Linux OS"
-                            style="width: 48px; height: 48px; object-fit: contain;">
-                    </div>
+            <div class="download-card">
+                <div class="download-os-icon">
+                    <img src="assets/Linux.png" alt="Linux" style="width:52px;height:52px;object-fit:contain;">
+                </div>
+                <div class="download-info">
                     <h3>Linux</h3>
-                    <p>Ubuntu 18.04+ — 64-bit<br>AppImage + small launcher script (see guide above)</p>
-                    <div id="linuxDownloadArea">
-                        <a href="#" id="linuxDownloadBtn" class="btn btn-primary btn-sm" style="width:100%; margin-bottom:8px;"
-                            onclick="handleLinuxDownload(event)">
-                            Download .AppImage
-                        </a>
-                        <a href="#" id="linuxLauncherBtn" class="btn btn-outline btn-sm" style="width:100%;"
-                            onclick="handleLinuxLauncherDownload(event)">
-                            Download launcher (.sh)
-                        </a>
-                        <p id="linuxLoginMsg" class="login-gate-msg" style="display:none;">
-                            Please <a href="auth.html">login</a> to download.
-                        </p>
-                    </div>
+                    <span class="download-meta">Ubuntu 20.04+ · 64-bit · ~150 MB · .AppImage</span>
                 </div>
+                <div id="linuxDownloadArea">
+                    <a href="https://github.com/Dharani-Sundharam/CodePaste/releases/download/v1.0.0/CTpaste.AppImage" id="linuxDownloadBtn" class="btn btn-primary btn-sm btn-full">Download .AppImage</a>
+                </div>
+            </div>
 
-                <!-- Android -->
-                <div class="card download-card">
-                    <div class="os-logo">
-                        <img src="assets/android.png" alt="Android App"
-                            style="width: 64px; height: auto; object-fit: contain; padding: 4px;">
-                    </div>
+            <div class="download-card">
+                <div class="download-os-icon">
+                    <img src="assets/android.png" alt="Android" style="width:52px;height:auto;object-fit:contain;">
+                </div>
+                <div class="download-info">
                     <h3>Android</h3>
-                    <p>Android 9.0+<br>Phone Sync App · .apk file</p>
-                    <div id="androidDownloadArea">
-                        <a href="#" id="androidDownloadBtn" class="btn btn-primary btn-sm" style="width:100%;"
-                            onclick="handleAndroidDownload(event)">
-                            Download .apk
-                        </a>
-                        <p id="androidLoginMsg" class="login-gate-msg" style="display:none;">
-                            Please <a href="auth.html">login</a> to download.
-                        </p>
-                    </div>
+                    <span class="download-meta">Android 9.0+ · Phone Sync · .apk</span>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing -->
-    <section id="pricing">
-        <div class="container">
-            <h2 class="section-title">Plans</h2>
-            <p class="section-subtitle">Start free on GO. Upgrade anytime through your dashboard.</p>
-
-            <div class="pricing-grid">
-                <div class="card pricing-card">
-                    <h3>GO</h3>
-                    <div class="pricing-price">Free</div>
-                    <p class="pricing-desc">Default plan for all students</p>
-                    <ul class="pricing-features">
-                        <li>Slow typing speed (150–200ms)</li>
-                        <li>1 hour session</li>
-                        <li>2 hour cooldown</li>
-                        <li>Phone sync included</li>
-                    </ul>
-                    <span class="btn btn-outline btn-sm" style="width:100%;">Default</span>
-                </div>
-
-                <div class="card pricing-card">
-                    <h3>Sync App</h3>
-                    <div class="pricing-price">&#8377;30 <span>/ week</span></div>
-                    <p class="pricing-desc">Phone Clipboard Sync</p>
-                    <ul class="pricing-features">
-                        <li>Send code directly from your phone</li>
-                        <li>Syncs instantly to PC via Firebase</li>
-                        <li>Requires Android 9.0+</li>
-                        <li>7-day unlimited pass</li>
-                    </ul>
-                    <a href="auth.html" class="btn btn-outline btn-sm" style="width:100%;">Get Sync App</a>
-                </div>
-
-                <div class="card pricing-card featured">
-                    <div class="pricing-badge">Popular</div>
-                    <h3>PRO Add-ons</h3>
-                    <div class="pricing-price">&#8377;20 - &#8377;60</div>
-                    <p class="pricing-desc">Stack on top of GO</p>
-                    <ul class="pricing-features">
-                        <li>Speed Boost — &#8377;20 (Fast typing)</li>
-                        <li>Extra Hour — &#8377;40 (+1 hr session)</li>
-                        <li>Both — &#8377;60 (Fast + 2 hrs)</li>
-                        <li>2 hour cooldown</li>
-                    </ul>
-                    <a href="auth.html" class="btn btn-primary btn-sm" style="width:100%;">Get PRO</a>
-                </div>
-
-                <div class="card pricing-card">
-                    <h3>SUPER</h3>
-                    <div class="pricing-price">&#8377;80</div>
-                    <p class="pricing-desc">Maximum session time</p>
-                    <ul class="pricing-features">
-                        <li>Medium typing speed (100–150ms)</li>
-                        <li>3 hour session (1 + 2 bonus hrs)</li>
-                        <li>2 hour cooldown</li>
-                        <li>Phone sync included</li>
-                    </ul>
-                    <a href="auth.html" class="btn btn-outline btn-sm" style="width:100%;">Get SUPER</a>
-                </div>
-
-                <div class="card pricing-card" style="border-color:rgba(139,92,246,0.5);background:linear-gradient(160deg,#1a1a2e 70%,#200f2e);">
-                    <div class="pricing-badge" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">New</div>
-                    <h3 style="color:#c084fc;">AI Addon</h3>
-                    <div class="pricing-price" style="color:#a78bfa;">&#8377;50 <span>/ day</span></div>
-                    <p class="pricing-desc" style="color:#9d8fc8;">Groq AI • Alt+B hotkey</p>
-                    <ul class="pricing-features">
-                        <li>Ask AI anything via clipboard</li>
-                        <li>Response typed live into your IDE</li>
-                        <li>Uses your own free Groq key</li>
-                        <li>Expires at midnight (EOD)</li>
-                    </ul>
-                    <a href="auth.html" class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#7c3aed,#a855f7);">Get AI Addon</a>
+                <div id="androidDownloadArea">
+                    <a href="CTpaste_Android.apk" id="androidDownloadBtn" class="btn btn-primary btn-sm btn-full">Download .apk</a>
                 </div>
             </div>
 
-            <p style="text-align:center; color:var(--text2); font-size:.85rem; margin-top:24px;">
-                Plans are purchased via UPI through your dashboard during payment windows (7–8 AM · 3–6 PM · 9–11 PM).
-            </p>
         </div>
-    </section>
+    </div>
+</section>
 
-    <footer class="footer">
-        <div class="container">
-            <p>CTpaste &copy; 2026</p>
+<!-- ═══════════════ PRICING ═══════════════ -->
+<section id="pricing">
+    <div class="container">
+        <div class="section-header">
+            <h2>Plans &amp; Pricing</h2>
+            <p>Choose a plan and buy from your dashboard in one tap.</p>
         </div>
-    </footer>
 
-    <script>
-        // Check login state for download gating
-        function handleDownload(e) {
+        <div class="pricing-grid">
+
+            <div class="pricing-card">
+                <div class="plan-header">
+                    <h3>Phone Sync</h3>
+                    <div class="plan-price">₹35</div>
+                    <p class="plan-sub">Sync only</p>
+                </div>
+                <ul class="plan-features">
+                    <li>Phone clipboard sync on Android</li>
+                    <li>Instant sync to desktop app</li>
+                    <li>7-day sync access</li>
+                    <li>No AI included</li>
+                </ul>
+                <a href="auth.html" class="btn btn-outline btn-sm btn-full pricing-buy">Buy Now</a>
+            </div>
+
+            <div class="pricing-card pricing-card-ai">
+                <div class="plan-header">
+                    <h3 class="plan-name-ai">AI Addon</h3>
+                    <div class="plan-price plan-price-ai">₹45 <span>/ day</span></div>
+                    <p class="plan-sub plan-sub-ai">AI only</p>
+                </div>
+                <ul class="plan-features">
+                    <li>Ask AI with Alt+B workflow</li>
+                    <li>Answer typed live in IDE</li>
+                    <li>Uses your own Groq API key</li>
+                    <li>Valid till midnight (EOD)</li>
+                </ul>
+                <a href="auth.html" class="btn btn-ai btn-sm btn-full pricing-buy">Buy Now</a>
+            </div>
+
+            <div class="pricing-card">
+                <div class="plan-header">
+                    <h3>AI + Phone Sync</h3>
+                    <div class="plan-price">₹59</div>
+                    <p class="plan-sub">Combo pack</p>
+                </div>
+                <ul class="plan-features">
+                    <li>AI Addon included</li>
+                    <li>Phone sync included</li>
+                    <li>AI valid till midnight</li>
+                    <li>Phone sync valid 7 days</li>
+                </ul>
+                <a href="auth.html" class="btn btn-primary btn-sm btn-full pricing-buy">Buy Now</a>
+            </div>
+
+            <div class="pricing-card pricing-card-featured">
+                <div class="plan-badge">⭐ Popular</div>
+                <div class="plan-header">
+                    <h3>Medium 3hr + AI</h3>
+                    <div class="plan-price">₹119</div>
+                    <p class="plan-sub">Performance + AI</p>
+                </div>
+                <ul class="plan-features">
+                    <li>Medium typing speed enabled</li>
+                    <li>3-hour session profile</li>
+                    <li>AI Addon included</li>
+                    <li>No phone sync in this plan</li>
+                </ul>
+                <a href="auth.html" class="btn btn-outline btn-sm btn-full pricing-buy">Buy Now</a>
+            </div>
+
+            <div class="pricing-card pricing-card-ai">
+                <div class="plan-badge plan-badge-ai">✦ New</div>
+                <div class="plan-header">
+                    <h3 class="plan-name-ai">Medium 3hr + AI + Sync</h3>
+                    <div class="plan-price plan-price-ai">₹129</div>
+                    <p class="plan-sub plan-sub-ai">Full combo</p>
+                </div>
+                <ul class="plan-features">
+                    <li>Medium typing speed enabled</li>
+                    <li>3-hour session profile</li>
+                    <li>AI Addon + Phone sync included</li>
+                    <li>Best all-in-one package</li>
+                </ul>
+                <a href="auth.html" class="btn btn-ai btn-sm btn-full pricing-buy">Buy Now</a>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="footer">
+    <div class="container footer-inner">
+        <a href="#" class="footer-brand">CTpaste</a>
+        <div class="footer-links">
+            <a href="#features">Features</a>
+            <a href="#guide">Guide</a>
+            <a href="#download">Download</a>
+            <a href="#pricing">Plans</a>
+            <a href="auth.html">Login</a>
+        </div>
+        <p class="footer-copy">© 2026 CTpaste. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    document.querySelectorAll(".pricing-buy").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
             e.preventDefault();
-            const user = localStorage.getItem("CTpaste_user");
-            if (!user) {
-                document.getElementById("winLoginMsg").style.display = "block";
-                document.getElementById("winDownloadBtn").style.display = "none";
-                return;
-            }
-            // Replace with actual EXE URL or serve from folder
-            const link = document.createElement("a");
-            link.href = "https://github.com/Dharani-Sundharam/CodePaste/releases/download/v1.0.0/CTpaste.exe";
-            link.download = "CTpaste.exe";
-            link.click();
-        }
-
-        function handleLinuxDownload(e) {
-            e.preventDefault();
-            const user = localStorage.getItem("CTpaste_user");
-            if (!user) {
-                document.getElementById("linuxLoginMsg").style.display = "block";
-                document.getElementById("linuxDownloadBtn").style.display = "none";
-                const lz = document.getElementById("linuxLauncherBtn");
-                if (lz) lz.style.display = "none";
-                return;
-            }
-            const link = document.createElement("a");
-            link.href = "https://github.com/Dharani-Sundharam/CodePaste/releases/download/v1.0.0/CTpaste.AppImage";
-            link.download = "CTpaste.AppImage";
-            link.click();
-        }
-
-        function handleLinuxLauncherDownload(e) {
-            e.preventDefault();
-            const user = localStorage.getItem("CTpaste_user");
-            if (!user) {
-                document.getElementById("linuxLoginMsg").style.display = "block";
-                document.getElementById("linuxDownloadBtn").style.display = "none";
-                const lz = document.getElementById("linuxLauncherBtn");
-                if (lz) lz.style.display = "none";
-                return;
-            }
-            const link = document.createElement("a");
-            link.href =
-                "https://raw.githubusercontent.com/Dharani-Sundharam/CodePaste/master/CTpaste-Desktop/linux/run-ctpaste-appimage.sh";
-            link.download = "run-ctpaste-appimage.sh";
-            link.click();
-        }
-
-        function handleAndroidDownload(e) {
-            e.preventDefault();
-            const user = localStorage.getItem("CTpaste_user");
-            if (!user) {
-                document.getElementById("androidLoginMsg").style.display = "block";
-                document.getElementById("androidDownloadBtn").style.display = "none";
-                return;
-            }
-            const link = document.createElement("a");
-            link.href = "CTpaste_Android.apk";
-            link.download = "CTpaste_Android.apk";
-            link.click();
-        }
-
-        // Show correct download button state on load
-        window.addEventListener("load", () => {
-            const user = localStorage.getItem("CTpaste_user");
-            if (!user) {
-                const winBtn = document.getElementById("winDownloadBtn");
-                winBtn.textContent = "Login to Download";
-                winBtn.classList.replace("btn-primary", "btn-outline");
-
-                const linBtn = document.getElementById("linuxDownloadBtn");
-                if (linBtn) {
-                    linBtn.textContent = "Login to Download";
-                    linBtn.classList.replace("btn-primary", "btn-outline");
-                }
-
-                const linLaunch = document.getElementById("linuxLauncherBtn");
-                if (linLaunch) linLaunch.style.display = "none";
-
-                const andBtn = document.getElementById("androidDownloadBtn");
-                if (andBtn) {
-                    andBtn.textContent = "Login to Download";
-                    andBtn.classList.replace("btn-primary", "btn-outline");
-                }
-            }
+            const destination = localStorage.getItem("CTpaste_user") ? "dashboard.html" : "auth.html";
+            window.location.href = destination;
         });
-    </script>
-</body>
+    });
+</script>
 
+</body>
 </html>

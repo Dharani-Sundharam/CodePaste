@@ -20,12 +20,15 @@
             border: 1.5px solid var(--border);
             border-radius: 14px;
             padding: 16px 12px 12px;
+            min-height: 148px;
             cursor: pointer;
             transition: border-color .22s ease, transform .22s ease, box-shadow .22s ease, background .22s ease;
             text-align: center;
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            display: flex;
+            flex-direction: column;
         }
 
         .pay-plan-card::before {
@@ -424,47 +427,40 @@
             <!-- Plan Cards Grid -->
             <div id="planCardsGrid">
 
-                <div class="pay-plan-card" data-value="PRO_SPEED:20" onclick="selectPlanCard(this)">
+                <div class="pay-plan-card" data-value="SYNC_APP:35" onclick="selectPlanCard(this)">
                     <div class="ppc-dot"></div>
-                    <div class="ppc-name">PRO Speed</div>
-                    <div class="ppc-price">&#8377;20</div>
-                    <div class="ppc-desc">Fast typing</div>
+                    <div class="ppc-name">Phone Sync</div>
+                    <div class="ppc-price">&#8377;35</div>
+                    <div class="ppc-desc">Sync only · 7d</div>
                 </div>
 
-                <div class="pay-plan-card" data-value="SYNC_APP:30" onclick="selectPlanCard(this)">
-                    <div class="ppc-dot"></div>
-                    <div class="ppc-name">Sync App</div>
-                    <div class="ppc-price">&#8377;30</div>
-                    <div class="ppc-desc">Phone sync · 7d</div>
-                </div>
-
-                <div class="pay-plan-card" data-value="PRO_HOUR:40" onclick="selectPlanCard(this)">
-                    <div class="ppc-dot"></div>
-                    <div class="ppc-name">PRO Hour</div>
-                    <div class="ppc-price">&#8377;40</div>
-                    <div class="ppc-desc">+1 hr session</div>
-                </div>
-
-                <div class="pay-plan-card" data-value="PRO_BOTH:60" onclick="selectPlanCard(this)">
-                    <div class="ppc-dot"></div>
-                    <div class="ppc-name">PRO Both</div>
-                    <div class="ppc-price">&#8377;60</div>
-                    <div class="ppc-desc">Fast + 2 hrs</div>
-                </div>
-
-                <div class="pay-plan-card ppc-featured" data-value="SUPER:80" onclick="selectPlanCard(this)">
-                    <div class="ppc-dot"></div>
-                    <div class="ppc-name">SUPER</div>
-                    <div class="ppc-price">&#8377;80</div>
-                    <div class="ppc-desc">Medium + 3 hrs</div>
-                    <span class="ppc-best-badge">Best</span>
-                </div>
-
-                <div class="pay-plan-card ppc-ai" data-value="AI_ADDON:50" onclick="selectPlanCard(this)">
+                <div class="pay-plan-card ppc-ai" data-value="AI_ADDON:45" onclick="selectPlanCard(this)">
                     <div class="ppc-dot"></div>
                     <div class="ppc-name">AI Addon</div>
-                    <div class="ppc-price">&#8377;50</div>
-                    <div class="ppc-desc">Groq AI · today</div>
+                    <div class="ppc-price">&#8377;45</div>
+                    <div class="ppc-desc">AI only · EOD</div>
+                </div>
+
+                <div class="pay-plan-card" data-value="AI_SYNC:59" onclick="selectPlanCard(this)">
+                    <div class="ppc-dot"></div>
+                    <div class="ppc-name">AI + Sync</div>
+                    <div class="ppc-price">&#8377;59</div>
+                    <div class="ppc-desc">Combo pack</div>
+                </div>
+
+                <div class="pay-plan-card ppc-featured" data-value="MEDIUM3H_AI:119" onclick="selectPlanCard(this)">
+                    <div class="ppc-dot"></div>
+                    <div class="ppc-name">Medium 3hr + AI</div>
+                    <div class="ppc-price">&#8377;119</div>
+                    <div class="ppc-desc">Medium + AI</div>
+                    <span class="ppc-best-badge">Popular</span>
+                </div>
+
+                <div class="pay-plan-card ppc-ai" data-value="MEDIUM3H_AI_SYNC:129" onclick="selectPlanCard(this)">
+                    <div class="ppc-dot"></div>
+                    <div class="ppc-name">Medium 3hr + AI + Sync</div>
+                    <div class="ppc-price">&#8377;129</div>
+                    <div class="ppc-desc">Full combo</div>
                 </div>
 
             </div>
@@ -612,6 +608,10 @@
             if (!val) { qrPanel.style.display = "none"; return; }
 
             const [plan, amount] = val.split(":");
+            if (!plan || !amount || Number.isNaN(Number(amount))) {
+                qrPanel.style.display = "none";
+                return;
+            }
             document.getElementById("qrAmount").textContent = "₹" + amount;
             qrPanel.style.display = "block";
 

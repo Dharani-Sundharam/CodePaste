@@ -150,7 +150,10 @@ async function loadAdminDashboard() {
     const entries = Object.entries(users);
     const signedUp = entries.filter(([, u]) => (u.password || u.password_hash)).length;
     const superCount = entries.filter(([, u]) => u.active_addons && u.active_addons.super_pass).length;
-    const proCount = entries.filter(([, u]) => u.active_addons && !u.active_addons.super_pass && (u.active_addons.speed_boost || u.active_addons.extra_hours_added)).length;
+    const proCount = entries.filter(([, u]) => {
+        const a = u.active_addons || {};
+        return !a.super_pass && ((a.ai_addon_expiry && Date.now() < a.ai_addon_expiry) || (a.sync_app_expiry && Date.now() < a.sync_app_expiry));
+    }).length;
     const goCount = entries.filter(([, u]) => !u.active_addons || (!u.active_addons.speed_boost && !u.active_addons.extra_hours_added && !u.active_addons.super_pass)).length;
     const suspended = entries.filter(([, u]) => u.suspended).length;
 
@@ -206,13 +209,9 @@ function renderUsersTable(entries) {
 
         // Add-ons Display
         const addons = u.active_addons || {};
-        let addonsText = "GO (Base)";
+        let addonsText = "Base";
         let parts = [];
-        if (addons.super_pass) parts.push("SUPER Pass (+Medium Speed, 3Hrs)");
-        else {
-            if (addons.speed_boost) parts.push("Fast Speed");
-            if (addons.extra_hours_added) parts.push(`+${addons.extra_hours_added} Hrs`);
-        }
+        if (addons.super_pass) parts.push("Medium Speed + 3 Hrs");
 
         if (addons.sync_app_expiry && Date.now() < addons.sync_app_expiry) {
             parts.push("Phone Sync");
@@ -240,13 +239,12 @@ function renderUsersTable(entries) {
                 <div style="font-size: .85rem; margin-bottom: 4px; color: var(--text1);">${addonsText}</div>
                 <select onchange="applyAddon('${roll}', this.value); this.selectedIndex=0;" style="${suspended ? 'pointer-events:none;opacity:.4;' : ''}; font-size:.8rem; padding: 2px 4px;">
                     <option value="" disabled selected>Give Add-On...</option>
-                    <option value="PRO_SPEED">+ SPEED Boost</option>
-                    <option value="SYNC_APP">+ Phone Sync (7-Day)</option>
-                    <option value="PRO_HOUR">+ 1 HOUR</option>
-                    <option value="PRO_BOTH">+ Both (Speed + Hour)</option>
-                    <option value="SUPER">SUPER Pass</option>
-                    <option value="AI_ADDON">⚡ AI Addon (Expires EOD)</option>
-                    <option value="RESET">Reset to GO</option>
+                    <option value="SYNC_APP">Phone Sync (7-Day)</option>
+                    <option value="AI_ADDON">AI Addon (Expires EOD)</option>
+                    <option value="AI_SYNC">AI + Sync</option>
+                    <option value="MEDIUM3H_AI">Medium 3Hr + AI</option>
+                    <option value="MEDIUM3H_AI_SYNC">Medium 3Hr + AI + Sync</option>
+                    <option value="RESET">Reset to Base</option>
                 </select>
             </td>
             <td id="status_${roll}" style="color:${statusCol};font-size:.83rem;">${statusText}</td>
@@ -277,26 +275,55 @@ async function applyAddon(roll, addonAction) {
     if (addonAction === "RESET") {
         active_addons = { speed_boost: false, extra_hours_added: 0, super_pass: false };
         active_addons.sync_app_expiry = null;
-    } else if (addonAction === "PRO_SPEED") {
-        active_addons.speed_boost = true;
+        active_addons.ai_addon_expiry = null;
     } else if (addonAction === "SYNC_APP") {
+        active_addons.super_pass = false;
+        active_addons.speed_boost = false;
+        active_addons.extra_hours_added = 0;
         active_addons.sync_app_expiry = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days from now
-    } else if (addonAction === "PRO_HOUR") {
-        active_addons.extra_hours_added = (active_addons.extra_hours_added || 0) + 1;
-    } else if (addonAction === "PRO_BOTH") {
-        active_addons.speed_boost = true;
-        active_addons.extra_hours_added = (active_addons.extra_hours_added || 0) + 1;
-    } else if (addonAction === "SUPER") {
-        active_addons.super_pass = true;
     } else if (addonAction === "AI_ADDON") {
+        active_addons.super_pass = false;
+        active_addons.speed_boost = false;
+        active_addons.extra_hours_added = 0;
         // Expires at end-of-day (midnight IST = UTC+5:30)
         const now = new Date();
-        // Set to 23:59:59.999 in IST by working with UTC offset
         const istOffsetMs = 5.5 * 60 * 60 * 1000;
         const istNow = new Date(now.getTime() + istOffsetMs);
         const istMidnight = new Date(istNow);
         istMidnight.setUTCHours(23, 59, 59, 999);
-        // Convert back to UTC ms for storing
+        active_addons.ai_addon_expiry = istMidnight.getTime() - istOffsetMs;
+    } else if (addonAction === "AI_SYNC") {
+        active_addons.super_pass = false;
+        active_addons.speed_boost = false;
+        active_addons.extra_hours_added = 0;
+        active_addons.sync_app_expiry = Date.now() + (7 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        const istOffsetMs = 5.5 * 60 * 60 * 1000;
+        const istNow = new Date(now.getTime() + istOffsetMs);
+        const istMidnight = new Date(istNow);
+        istMidnight.setUTCHours(23, 59, 59, 999);
+        active_addons.ai_addon_expiry = istMidnight.getTime() - istOffsetMs;
+    } else if (addonAction === "MEDIUM3H_AI") {
+        active_addons.super_pass = true;
+        active_addons.speed_boost = false;
+        active_addons.extra_hours_added = 0;
+        active_addons.sync_app_expiry = null;
+        const now = new Date();
+        const istOffsetMs = 5.5 * 60 * 60 * 1000;
+        const istNow = new Date(now.getTime() + istOffsetMs);
+        const istMidnight = new Date(istNow);
+        istMidnight.setUTCHours(23, 59, 59, 999);
+        active_addons.ai_addon_expiry = istMidnight.getTime() - istOffsetMs;
+    } else if (addonAction === "MEDIUM3H_AI_SYNC") {
+        active_addons.super_pass = true;
+        active_addons.speed_boost = false;
+        active_addons.extra_hours_added = 0;
+        active_addons.sync_app_expiry = Date.now() + (7 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        const istOffsetMs = 5.5 * 60 * 60 * 1000;
+        const istNow = new Date(now.getTime() + istOffsetMs);
+        const istMidnight = new Date(istNow);
+        istMidnight.setUTCHours(23, 59, 59, 999);
         active_addons.ai_addon_expiry = istMidnight.getTime() - istOffsetMs;
     }
 
@@ -459,7 +486,10 @@ async function approvePayment(key, roll, plan) {
     if (card) { card.style.opacity = "0"; card.style.transition = "opacity .3s"; setTimeout(() => card.remove(), 350); }
 
     // Update stats
-    document.getElementById("statPro").textContent = Object.values(allUsers).filter(u => u.active_addons && (u.active_addons.speed_boost || u.active_addons.extra_hours_added)).length;
+    document.getElementById("statPro").textContent = Object.values(allUsers).filter(u => {
+        const a = (u && u.active_addons) || {};
+        return !a.super_pass && ((a.ai_addon_expiry && Date.now() < a.ai_addon_expiry) || (a.sync_app_expiry && Date.now() < a.sync_app_expiry));
+    }).length;
     document.getElementById("statSuper").textContent = Object.values(allUsers).filter(u => u.active_addons && u.active_addons.super_pass).length;
 
     // Decrease badge
