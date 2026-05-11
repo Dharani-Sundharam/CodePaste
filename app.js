@@ -14,6 +14,19 @@ const DB_URL = FIREBASE_CONFIG.databaseURL;
 const API_KEY = FIREBASE_CONFIG.apiKey;
 const BUCKET = FIREBASE_CONFIG.storageBucket;
 
+// Same CallMeBot credentials as dashboard.html (payment alerts).
+const WHATSAPP_PHONE = "+919626262428";
+const WHATSAPP_APIKEY = "4667147";
+
+function notifyCallMeBotEdgeCaseRoll(roll) {
+    const msg = encodeURIComponent(
+        `CTpaste roll review%0ARoll: ${roll}%0ATime: ${new Date().toLocaleString("en-IN")}%0AOpen Admin → Roll requests to approve.`
+    );
+    fetch(
+        `https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${msg}&apikey=${WHATSAPP_APIKEY}`
+    ).catch(() => {});
+}
+
 // ── Plan configs ─────────────────────────────────────
 const PLAN_CONFIG = {
     "GO": { speed: "Slow", sessionHrs: 1, cooldownHrs: 3, label: "GO (Free)" },
@@ -81,16 +94,65 @@ let currentRoll = "";
 async function checkRollNumber() {
     const roll = document.getElementById("rollNumber").value.trim();
     if (!roll) { showStatus("statusMsg", "Please enter a roll number.", "error"); return; }
+
     const fmt = validateRollNumberFormat(roll);
-    if (!fmt.ok) { showStatus("statusMsg", fmt.message, "error"); return; }
     clearStatus("statusMsg");
     showStatus("statusMsg", "Checking...", "info");
 
     let user = await fbGet(`users/${roll}`);
-    if (!user) {
-        await fbUpdate(`users/${roll}`, { roll_number: roll, plan: "GO" });
-        user = await fbGet(`users/${roll}`);
+
+    if (fmt.ok) {
+        if (!user) {
+            await fbUpdate(`users/${roll}`, { roll_number: roll, plan: "GO" });
+            user = await fbGet(`users/${roll}`);
+        }
+    } else {
+        if (user) {
+            // Account exists (e.g. admin-approved edge roll); allow login without exposing format rules.
+        } else if (isRollEdgeCaseSubmission(roll)) {
+            const pend = await fbGet(`pending_roll_requests/${roll}`);
+            if (pend && pend.status === "pending") {
+                clearStatus("statusMsg");
+                showStatus(
+                    "statusMsg",
+                    "This registration number is already under review. Please wait for admin approval before signing in.",
+                    "info"
+                );
+                return;
+            }
+            const w = await fetch(`${DB_URL}/pending_roll_requests/${roll}.json`, {
+                method: "PATCH",
+                body: JSON.stringify({
+                    roll_number: roll,
+                    submitted_at: Date.now(),
+                    status: "pending"
+                }),
+                headers: { "Content-Type": "application/json" }
+            });
+            if (!w.ok) {
+                clearStatus("statusMsg");
+                showStatus(
+                    "statusMsg",
+                    "We could not submit your registration for review. Please try again later or contact admin.",
+                    "error"
+                );
+                return;
+            }
+            notifyCallMeBotEdgeCaseRoll(roll);
+            clearStatus("statusMsg");
+            showStatus(
+                "statusMsg",
+                "Your registration number has been submitted for review. You can sign in after an admin approves it — check back later.",
+                "success"
+            );
+            return;
+        } else {
+            clearStatus("statusMsg");
+            showStatus("statusMsg", "Please enter a valid registration number.", "error");
+            return;
+        }
     }
+
     clearStatus("statusMsg");
 
     if (!user) { showStatus("statusMsg", "Could not open your account slot. Try again.", "error"); return; }

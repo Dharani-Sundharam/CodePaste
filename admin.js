@@ -11,6 +11,7 @@ let currentTab = "users";
 // SSE streams
 let usersStream = null;
 let paymentsStream = null;
+let pendingRollStream = null;
 
 // ── Page startup ───────────────────────────────────────
 function adminStartup() {
@@ -104,6 +105,12 @@ function startRealTimeListeners() {
         // Silently ignore — browser will auto-reconnect
     };
 
+    if (pendingRollStream) pendingRollStream.close();
+    pendingRollStream = new EventSource(`${base}/pending_roll_requests.json?stream=true`);
+    pendingRollStream.addEventListener("put", _handlePendingRollStreamEvent);
+    pendingRollStream.addEventListener("patch", _handlePendingRollStreamEvent);
+    pendingRollStream.onerror = () => {};
+
     // Show live indicator
     const liveEl = document.getElementById("liveIndicator");
     if (liveEl) liveEl.style.display = "inline-block";
@@ -120,9 +127,19 @@ function _handlePaymentStreamEvent(e) {
     } catch (_) { /* ignore parse errors */ }
 }
 
+function _handlePendingRollStreamEvent(e) {
+    try {
+        const payload = JSON.parse(e.data);
+        if (payload && payload.data !== null) {
+            loadAdminDashboard();
+        }
+    } catch (_) { /* ignore */ }
+}
+
 function stopRealTimeListeners() {
     if (usersStream) { usersStream.close(); usersStream = null; }
     if (paymentsStream) { paymentsStream.close(); paymentsStream = null; }
+    if (pendingRollStream) { pendingRollStream.close(); pendingRollStream = null; }
     // Hide live indicator
     const liveEl = document.getElementById("liveIndicator");
     if (liveEl) liveEl.style.display = "none";
@@ -132,6 +149,7 @@ function stopRealTimeListeners() {
 function switchTab(tab) {
     currentTab = tab;
     document.getElementById("tabUsers").style.display = tab === "users" ? "block" : "none";
+    document.getElementById("tabPendingRolls").style.display = tab === "pendingRolls" ? "block" : "none";
     document.getElementById("tabPayments").style.display = tab === "payments" ? "block" : "none";
     document.getElementById("tabPaylog").style.display = tab === "paylog" ? "block" : "none";
     document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
@@ -140,9 +158,10 @@ function switchTab(tab) {
 
 // ── Load Dashboard ─────────────────────────────────────
 async function loadAdminDashboard() {
-    const [usersRaw, payments] = await Promise.all([
+    const [usersRaw, payments, rollReqRaw] = await Promise.all([
         fbGet("users"),
-        fbGet("payment_requests")
+        fbGet("payment_requests"),
+        fbGet("pending_roll_requests")
     ]);
     const users = usersRaw && typeof usersRaw === "object" ? usersRaw : {};
 
@@ -161,6 +180,10 @@ async function loadAdminDashboard() {
         ? Object.entries(payments).filter(([, p]) => p.status === "pending")
         : [];
 
+    const pendingRollEntries = rollReqRaw && typeof rollReqRaw === "object"
+        ? Object.entries(rollReqRaw).filter(([, r]) => r && r.status === "pending")
+        : [];
+
     document.getElementById("statTotal").textContent = entries.length;
     document.getElementById("statSignedUp").textContent = signedUp;
     document.getElementById("statGo").textContent = goCount;
@@ -168,6 +191,15 @@ async function loadAdminDashboard() {
     document.getElementById("statSuper").textContent = superCount;
     document.getElementById("statSuspended").textContent = suspended;
     document.getElementById("statPending").textContent = pendingPayments.length;
+    document.getElementById("statRollPending").textContent = pendingRollEntries.length;
+
+    const rollBadge = document.getElementById("rollRequestNotifBadge");
+    if (pendingRollEntries.length > 0) {
+        rollBadge.style.display = "inline-flex";
+        rollBadge.textContent = pendingRollEntries.length;
+    } else {
+        rollBadge.style.display = "none";
+    }
 
     // Payment badge
     const badge = document.getElementById("paymentNotifBadge");
@@ -179,6 +211,7 @@ async function loadAdminDashboard() {
     }
 
     renderUsersTable(entries);
+    renderPendingRollQueue(pendingRollEntries);
     renderPaymentQueue(pendingPayments, payments ? payments : {});
 
     // Revenue = sum of approved payment amounts
@@ -189,6 +222,63 @@ async function loadAdminDashboard() {
     document.getElementById("statRevenue").textContent = "\u20b9" + revenue.toLocaleString("en-IN");
 
     renderPaymentLog(payments ? Object.entries(payments) : []);
+}
+
+// ── Pending roll requests (edge-case registrations) ─────
+function renderPendingRollQueue(entries) {
+    const tbody = document.getElementById("pendingRollsBody");
+    const empty = document.getElementById("pendingRollsEmpty");
+    if (!tbody || !empty) return;
+
+    if (!entries.length) {
+        tbody.innerHTML = "";
+        empty.style.display = "block";
+        return;
+    }
+    empty.style.display = "none";
+
+    const sorted = [...entries].sort((a, b) => (b[1].submitted_at || 0) - (a[1].submitted_at || 0));
+    tbody.innerHTML = sorted.map(([roll, r]) => {
+        const ts = r.submitted_at
+            ? new Date(r.submitted_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
+            : "—";
+        return `<tr id="pendingRollRow_${roll}">
+            <td style="font-weight:600;font-variant-numeric:tabular-nums;">${r.roll_number || roll}</td>
+            <td style="font-size:.85rem;color:var(--text2);">${ts}</td>
+            <td>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-xs btn-green" onclick="approvePendingRoll(${JSON.stringify(roll)})">Approve</button>
+                    <button class="btn btn-xs btn-red" onclick="rejectPendingRoll(${JSON.stringify(roll)})">Reject</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join("");
+}
+
+async function approvePendingRoll(roll) {
+    if (!roll) return;
+    if (!confirm(`Approve roll ${roll} and create a GO account stub (if missing)?`)) return;
+    try {
+        const existing = await fbGet(`users/${roll}`);
+        if (!existing) {
+            await fbUpdate(`users/${roll}`, { roll_number: roll, plan: "GO" });
+        }
+        await fbDelete(`pending_roll_requests/${roll}`);
+        await loadAdminDashboard();
+    } catch (e) {
+        alert("Approve failed: " + (e && e.message ? e.message : String(e)));
+    }
+}
+
+async function rejectPendingRoll(roll) {
+    if (!roll) return;
+    if (!confirm(`Reject and remove the pending request for ${roll}?`)) return;
+    try {
+        await fbDelete(`pending_roll_requests/${roll}`);
+        await loadAdminDashboard();
+    } catch (e) {
+        alert("Reject failed: " + (e && e.message ? e.message : String(e)));
+    }
 }
 
 // ── Render users table ─────────────────────────────────

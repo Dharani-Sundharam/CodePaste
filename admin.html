@@ -95,6 +95,10 @@
                     <div class="value" id="statPending" style="color:var(--yellow);">—</div>
                 </div>
                 <div class="admin-stat">
+                    <div class="label">Roll requests</div>
+                    <div class="value" id="statRollPending" style="color:var(--accent);">—</div>
+                </div>
+                <div class="admin-stat">
                     <div class="label">Total Revenue</div>
                     <div class="value" id="statRevenue" style="color:var(--green);">—</div>
                 </div>
@@ -103,6 +107,9 @@
             <!-- Tabs -->
             <div class="admin-tab-bar">
                 <button class="admin-tab active" id="tab-users" onclick="switchTab('users')">Users</button>
+                <button class="admin-tab" id="tab-pendingRolls" onclick="switchTab('pendingRolls')">
+                    Roll requests <span id="rollRequestNotifBadge" class="notif-badge" style="display:none;">0</span>
+                </button>
                 <button class="admin-tab" id="tab-payments" onclick="switchTab('payments')">
                     Payment Queue <span id="paymentNotifBadge" class="notif-badge" style="display:none;">0</span>
                     <span id="liveIndicator" title="Live updates active" style="display:none; width:8px; height:8px; background:var(--green,#43e97b); border-radius:50%; display:inline-block; margin-left:5px; animation:livepulse 1.5s infinite;"></span>
@@ -132,6 +139,26 @@
                                 <td colspan="6" style="text-align:center;padding:40px;color:var(--text3);">Loading
                                     users...</td>
                             </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Roll requests (edge-case registration queue) -->
+            <div id="tabPendingRolls" style="display:none;">
+                <p style="color:var(--text2);font-size:.9rem;margin-bottom:14px;">12-digit registration numbers that failed automatic format checks but were submitted for review. Approve to create a GO account stub (same as normal signup).</p>
+                <div id="pendingRollsEmpty" style="text-align:center; padding:48px; color:var(--text3); display:none;">No pending roll requests</div>
+                <div class="users-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Roll Number</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingRollsBody">
+                            <tr><td colspan="3" style="text-align:center;padding:40px;color:var(--text3);">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>

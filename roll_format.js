@@ -29,3 +29,9 @@ function validateRollNumberFormat(roll) {
     }
     return { ok: true };
 }
+
+/** Exactly 12 digits: same length as a real roll, but format may still fail strict rules → edge-case queue. */
+function isRollEdgeCaseSubmission(roll) {
+    const s = String(roll == null ? "" : roll).trim();
+    return /^\d{12}$/.test(s);
+}
