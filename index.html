@@ -220,7 +220,10 @@
 
             <div class="linux-tutorial-wrap">
                 <p class="linux-tutorial-title">Quick walkthrough</p>
-                <img src="assets/tutorial.gif?v=20260512" alt="Terminal walkthrough: chmod +x, run ./CTpaste, registration and hotkey prompt on Linux" class="linux-tutorial-gif" loading="lazy" decoding="async">
+                <a href="assets/tutorial.gif?v=20260513" target="_blank" rel="noopener noreferrer" class="linux-tutorial-gif-link">
+                    <img src="assets/tutorial.gif?v=20260513" width="800" height="450" alt="Terminal walkthrough: chmod +x, run ./CTpaste, registration and hotkey prompt on Linux" class="linux-tutorial-gif" loading="eager">
+                </a>
+                <p class="linux-tutorial-hint">Embedded previews sometimes clip long GIFs — <a href="assets/tutorial.gif?v=20260513" target="_blank" rel="noopener noreferrer">open the full animation</a> if it stops early.</p>
             </div>
             <p class="warning-note">⚠ <strong>Compatibility:</strong> Official Linux builds should be produced on <strong>Ubuntu 18.04</strong> (or the repo’s Docker Bionic scripts) so the binary runs on <strong>18.04 → 24.04+</strong> on <strong>amd64</strong>. A binary built only on Ubuntu 22.04 may fail on 18.04 with a <strong>GLIBC</strong> error. <strong>Global hotkeys</strong> need <strong>X11</strong> on many setups — choose <strong>Ubuntu on Xorg</strong> at login if Alt+V fails on Wayland; for AI capture, add your user to the <code>input</code> group for <strong>evdev</strong> (see project README).</p>
         </div>
