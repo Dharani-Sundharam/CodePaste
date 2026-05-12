@@ -307,6 +307,56 @@
             margin-top: 4px;
         }
 
+        /* Opens PhonePe / GPay / Paytm — shown only on phones (touch + handset-sized viewport) */
+        .pay-upi-app-wrap {
+            display: none;
+            padding: 16px 20px 8px;
+            border-bottom: 1px solid rgba(88,166,255,.12);
+            text-align: center;
+        }
+        @media (pointer: coarse) and (max-width: 932px) {
+            .pay-upi-app-wrap {
+                display: block;
+            }
+        }
+        .btn-pay-upi-app {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px 18px;
+            font-size: 0.94rem;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent-d), var(--accent));
+            box-shadow: 0 4px 16px rgba(31,111,235,.28);
+            border: none;
+            cursor: pointer;
+            color: #fff !important;
+            font-weight: 700;
+            font-family: inherit;
+            letter-spacing: .2px;
+            text-decoration: none !important;
+            transition: box-shadow .25s, transform .2s;
+            box-sizing: border-box;
+            min-height: 52px;
+        }
+        .btn-pay-upi-app svg { flex-shrink: 0; opacity: .95; }
+        @media (hover: hover) {
+            .btn-pay-upi-app:hover {
+                box-shadow: 0 6px 22px rgba(31,111,235,.45);
+                transform: translateY(-1px);
+                color: #fff !important;
+            }
+        }
+        .btn-pay-upi-app:active { transform: scale(.98); }
+        .pay-upi-app-hint {
+            margin: 10px 0 0;
+            font-size: .72rem;
+            color: var(--text3);
+            line-height: 1.45;
+        }
+
         .qr-center {
             display: flex;
             flex-direction: column;
@@ -621,6 +671,17 @@
                         <div class="qr-upi-hint">PhonePe · GPay · Paytm · Any UPI app</div>
                     </div>
 
+                    <div class="pay-upi-app-wrap">
+                        <a id="payWithUpiLink" class="btn-pay-upi-app" href="#" aria-label="Open UPI app to pay">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="5" y="2" width="14" height="20" rx="2"/>
+                                <path d="M12 18h.01"/>
+                            </svg>
+                            <span>Open UPI app to pay</span>
+                        </a>
+                        <p class="pay-upi-app-hint">Opens PhonePe, Google Pay, or Paytm with amount filled — then upload your screenshot below.</p>
+                    </div>
+
                     <!-- QR code -->
                     <div class="qr-center">
                         <div class="qr-glow-wrap">
@@ -703,6 +764,18 @@
 
         let selectedFile = null;
 
+        /** Same URI as QR — opens native UPI picker on Android / iOS */
+        function buildUpiPayHref(upiId, plan, amountStr) {
+            const q = new URLSearchParams({
+                pa: upiId,
+                pn: "CTpaste",
+                am: String(amountStr),
+                cu: "INR",
+                tn: "CTpaste " + plan.replace(/_/g, " ")
+            });
+            return "upi://pay?" + q.toString();
+        }
+
         function selectPlanCard(card) {
             document.querySelectorAll('.pay-plan-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
@@ -757,7 +830,9 @@
 
             const upi = "paytm.s1ri7l9@pty";
             document.getElementById("upiId").textContent = upi;
-            const upiData = encodeURIComponent(`upi://pay?pa=${upi}&pn=CTpaste&am=${amount}&cu=INR&tn=CTpaste+${plan}`);
+            const upiHref = buildUpiPayHref(upi, plan, amount);
+            document.getElementById("payWithUpiLink").href = upiHref;
+            const upiData = encodeURIComponent(upiHref);
             document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${upiData}&bgcolor=21262d&color=c9d1d9&margin=10`;
         }
 
