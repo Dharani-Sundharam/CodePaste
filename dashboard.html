@@ -530,6 +530,32 @@
             flex-shrink: 0;
         }
 
+        .pay-ai-warn {
+            max-width: 36rem;
+            margin: 0 auto 28px;
+            padding: 18px 22px;
+            font-size: 1.02rem;
+            line-height: 1.55;
+            color: var(--text);
+            background: rgba(210, 153, 34, 0.18);
+            border: 2px solid rgba(210, 153, 34, 0.55);
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(210, 153, 34, 0.12);
+        }
+        .pay-ai-warn strong {
+            color: #f0b429;
+            font-size: 1.06em;
+        }
+        @media (max-width: 480px) {
+            .pay-ai-warn {
+                font-size: 0.95rem;
+                padding: 16px 14px;
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+
         /* ── General mobile tweaks (dashboard page) ─────────── */
         .btn-sm {
             padding: 8px 16px;
@@ -619,6 +645,10 @@
                     <p>Pay via UPI — activated after admin approval</p>
                 </div>
                 <span class="pay-header-secure">Secure</span>
+            </div>
+
+            <div class="pay-ai-warn" role="alert">
+                <strong>Warning — AI access:</strong> If your plan includes AI, it only works until <strong>midnight tonight</strong> (end of today). It is <strong>not</strong> extended into tomorrow!
             </div>
 
             <!-- Plan Cards Grid -->
