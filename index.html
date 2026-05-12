@@ -130,7 +130,7 @@
             <div>
                 <h4>Before You Start</h4>
                 <ul>
-                    <li>Windows 10 / 11 (64-bit) or Ubuntu 20.04+ for the desktop app</li>
+                    <li>Windows 10 / 11 (64-bit) or Ubuntu 18.04+ / equivalent 64-bit Linux for the desktop app (official AppImage is built for broad Ubuntu coverage — see Linux guide)</li>
                     <li>A CTpaste account (create one in under a minute)</li>
                     <li>Your IDE open and ready (VS Code, IntelliJ, Eclipse, etc.)</li>
                 </ul>
@@ -206,18 +206,18 @@
         <!-- Linux Guide -->
         <div class="linux-guide">
             <h3>🐧 Linux Installation Guide</h3>
-            <p>CTpaste ships as a self-contained <strong class="text-accent">AppImage</strong> — no installation, no dependencies (except <code>xdotool</code>).</p>
+            <p>CTpaste ships as a self-contained <strong class="text-accent">AppImage</strong> — <strong>CLI on Linux</strong> (no GUI): run <code class="code-green">./CTpaste-x86_64.AppImage run</code> for session timer + hotkeys; use <code class="code-green">paste</code>, <code class="code-green">sync</code>, <code class="code-green">groq</code> subcommands as needed. Windows keeps the graphical app.</p>
             <ol>
-                <li>Download <strong>CTpaste.AppImage</strong> from the <a href="#download">Download section</a>.</li>
+                <li>Download <strong>CTpaste.AppImage</strong> from the <a href="#download">Download section</a>. For Ubuntu 22.04+, also grab <strong>run-ctpaste-appimage.sh</strong> from the same GitHub release or from <code>CTpaste-Desktop/linux/</code> in the repository.</li>
                 <li>Make it executable — right-click → <strong>Properties → Permissions → Allow executing as program</strong>,
-                    or run: <code class="code-green">chmod +x CTpaste.AppImage</code></li>
-                <li>Double-click to launch — no install needed!</li>
+                    or run: <code class="code-green">chmod +x CTpaste*.AppImage run-ctpaste-appimage.sh</code></li>
+                <li>On <strong>Ubuntu 22.04 / 24.04</strong>, prefer: <code class="code-green">./run-ctpaste-appimage.sh</code> (avoids classic FUSE / libfuse2 issues). Otherwise double-click or <code class="code-green">./CTpaste-x86_64.AppImage</code>.</li>
             </ol>
             <div class="linux-tutorial-wrap">
                 <p class="linux-tutorial-title">Quick walkthrough:</p>
                 <img src="assets/tutorial.gif" alt="Linux AppImage install tutorial" class="linux-tutorial-gif">
             </div>
-            <p class="warning-note">⚠ Requires Ubuntu 20.04+ / GLIBC 2.31+. Install xdotool first: <code class="code-green">sudo apt install xdotool</code></p>
+            <p class="warning-note">⚠ <strong>Compatibility:</strong> Release AppImages should be built on <strong>Ubuntu 18.04</strong> (or use <code class="code-green">docker-build-appimage-bionic.sh</code> in the repo) so they run on <strong>18.04 → 24.04+</strong> with the same glibc baseline. Building on a newer Ubuntu only produces a binary for <em>that</em> glibc or newer. <strong>Global hotkeys</strong> (Alt+V, Alt+B, …) need an <strong>X11</strong> session on Linux — on Wayland use <strong>Ubuntu on Xorg</strong> at login, or use in-app &quot;Paste from clipboard&quot; and <strong>evdev</strong> for AI capture (add your user to the <code>input</code> group; see Linux README).</p>
         </div>
 
     </div>
@@ -258,7 +258,7 @@
                 </div>
                 <div class="download-info">
                     <h3>Linux</h3>
-                    <span class="download-meta">Ubuntu 20.04+ · 64-bit · ~150 MB · .AppImage</span>
+                    <span class="download-meta">Ubuntu 18.04+ (amd64) when built on 18.04 · ~150 MB · .AppImage</span>
                 </div>
                 <div id="linuxDownloadArea">
                     <a href="https://github.com/Dharani-Sundharam/CodePaste/releases/download/v1.0.0/CTpaste.AppImage" id="linuxDownloadBtn" class="btn btn-primary btn-sm btn-full">Download .AppImage</a>

@@ -146,7 +146,13 @@
 
             <!-- Roll requests (edge-case registration queue) -->
             <div id="tabPendingRolls" style="display:none;">
-                <p style="color:var(--text2);font-size:.9rem;margin-bottom:14px;">12-digit registration numbers that failed automatic format checks but were submitted for review. Approve to create a GO account stub (same as normal signup).</p>
+                <div class="admin-queue-toolbar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                    <p style="color:var(--text2);font-size:.9rem;margin:0;flex:1;min-width:200px;">12-digit registration numbers that failed automatic format checks but were submitted for review. Approve to create a GO account stub (same as normal signup).</p>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.8rem;color:var(--text2);white-space:nowrap;">
+                        <input type="checkbox" id="autoApproveRolls" onchange="onAutoApproveRollsToggle(this.checked)">
+                        Auto-approve
+                    </label>
+                </div>
                 <div id="pendingRollsEmpty" style="text-align:center; padding:48px; color:var(--text3); display:none;">No pending roll requests</div>
                 <div class="users-table-wrap">
                     <table class="admin-table">
@@ -154,11 +160,12 @@
                             <tr>
                                 <th>Roll Number</th>
                                 <th>Submitted</th>
+                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="pendingRollsBody">
-                            <tr><td colspan="3" style="text-align:center;padding:40px;color:var(--text3);">Loading...</td></tr>
+                            <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text3);">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -166,8 +173,15 @@
 
             <!-- Payment Queue Tab -->
             <div id="tabPayments" style="display:none;">
+                <div class="admin-queue-toolbar" style="display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.8rem;color:var(--text2);white-space:nowrap;">
+                        <input type="checkbox" id="autoApprovePayments" onchange="onAutoApprovePaymentsToggle(this.checked)">
+                        Auto-approve
+                    </label>
+                </div>
+                <p id="paymentQueueHint" style="color:var(--text2);font-size:.8rem;margin:-4px 0 12px 0;display:none;">Approved items stay here until you dismiss them (Payment Log keeps full history).</p>
                 <div id="paymentQueueEmpty" style="text-align:center; padding:60px; color:var(--text3); display:none;">
-                    No pending payment requests
+                    No items in the payment queue
                 </div>
                 <div id="paymentQueueList"></div>
             </div>

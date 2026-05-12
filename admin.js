@@ -8,10 +8,66 @@
 let allUsers = {};
 let currentTab = "users";
 
+const LS_AUTO_APPROVE_ROLLS = "ctpaste_admin_auto_approve_rolls";
+const LS_AUTO_APPROVE_PAYMENTS = "ctpaste_admin_auto_approve_payments";
+const LS_PAYMENT_QUEUE_DISMISSED = "ctpaste_admin_dismissed_payment_queue_keys";
+
 // SSE streams
 let usersStream = null;
 let paymentsStream = null;
 let pendingRollStream = null;
+
+function getAutoApproveRollsOn() {
+    return localStorage.getItem(LS_AUTO_APPROVE_ROLLS) === "1";
+}
+function getAutoApprovePaymentsOn() {
+    return localStorage.getItem(LS_AUTO_APPROVE_PAYMENTS) === "1";
+}
+function onAutoApproveRollsToggle(on) {
+    localStorage.setItem(LS_AUTO_APPROVE_ROLLS, on ? "1" : "0");
+    loadAdminDashboard();
+}
+function onAutoApprovePaymentsToggle(on) {
+    localStorage.setItem(LS_AUTO_APPROVE_PAYMENTS, on ? "1" : "0");
+    loadAdminDashboard();
+}
+function syncAutoApproveCheckboxes() {
+    const r = document.getElementById("autoApproveRolls");
+    const p = document.getElementById("autoApprovePayments");
+    if (r) r.checked = getAutoApproveRollsOn();
+    if (p) p.checked = getAutoApprovePaymentsOn();
+}
+
+function getPaymentQueueDismissedKeys() {
+    try {
+        const s = localStorage.getItem(LS_PAYMENT_QUEUE_DISMISSED);
+        const a = s ? JSON.parse(s) : [];
+        return new Set(Array.isArray(a) ? a : []);
+    } catch {
+        return new Set();
+    }
+}
+function savePaymentQueueDismissedKeys(set) {
+    localStorage.setItem(LS_PAYMENT_QUEUE_DISMISSED, JSON.stringify([...set]));
+}
+function pruneStalePaymentDismissals(allPayments) {
+    const valid = new Set(Object.keys(allPayments || {}));
+    const set = getPaymentQueueDismissedKeys();
+    let changed = false;
+    for (const k of [...set]) {
+        if (!valid.has(k)) {
+            set.delete(k);
+            changed = true;
+        }
+    }
+    if (changed) savePaymentQueueDismissedKeys(set);
+}
+function dismissPaymentQueueCard(key) {
+    const set = getPaymentQueueDismissedKeys();
+    set.add(key);
+    savePaymentQueueDismissedKeys(set);
+    loadAdminDashboard();
+}
 
 // ── Page startup ───────────────────────────────────────
 function adminStartup() {
@@ -158,15 +214,54 @@ function switchTab(tab) {
 
 // ── Load Dashboard ─────────────────────────────────────
 async function loadAdminDashboard() {
-    const [usersRaw, payments, rollReqRaw] = await Promise.all([
+    syncAutoApproveCheckboxes();
+
+    let [usersRaw, payments, rollReqRaw] = await Promise.all([
         fbGet("users"),
         fbGet("payment_requests"),
         fbGet("pending_roll_requests")
     ]);
-    const users = usersRaw && typeof usersRaw === "object" ? usersRaw : {};
 
-    allUsers = users;
-    const entries = Object.entries(users);
+    let pendingPayments = payments
+        ? Object.entries(payments).filter(([, p]) => p && p.status === "pending")
+        : [];
+
+    let pendingRollEntries = rollReqRaw && typeof rollReqRaw === "object"
+        ? Object.entries(rollReqRaw).filter(([, r]) => r && (!r.status || r.status === "pending"))
+        : [];
+
+    let didAuto = false;
+    if (getAutoApproveRollsOn() && pendingRollEntries.length) {
+        for (const [roll] of pendingRollEntries) {
+            try {
+                await _approvePendingRollCore(roll, { auto: true });
+                didAuto = true;
+            } catch (e) {
+                console.warn("Auto-approve roll failed", roll, e);
+            }
+        }
+    }
+    if (getAutoApprovePaymentsOn() && pendingPayments.length) {
+        for (const [key, p] of pendingPayments) {
+            try {
+                await _approvePaymentCore(key, p.roll_number, p.requested_plan, { auto: true });
+                didAuto = true;
+            } catch (e) {
+                console.warn("Auto-approve payment failed", key, e);
+            }
+        }
+    }
+    if (didAuto) {
+        [usersRaw, payments, rollReqRaw] = await Promise.all([
+            fbGet("users"),
+            fbGet("payment_requests"),
+            fbGet("pending_roll_requests")
+        ]);
+    }
+
+    const usersAfter = usersRaw && typeof usersRaw === "object" ? usersRaw : {};
+    allUsers = usersAfter;
+    const entries = Object.entries(usersAfter);
     const signedUp = entries.filter(([, u]) => (u.password || u.password_hash)).length;
     const superCount = entries.filter(([, u]) => u.active_addons && u.active_addons.super_pass).length;
     const proCount = entries.filter(([, u]) => {
@@ -176,13 +271,20 @@ async function loadAdminDashboard() {
     const goCount = entries.filter(([, u]) => !u.active_addons || (!u.active_addons.speed_boost && !u.active_addons.extra_hours_added && !u.active_addons.super_pass)).length;
     const suspended = entries.filter(([, u]) => u.suspended).length;
 
-    const pendingPayments = payments
-        ? Object.entries(payments).filter(([, p]) => p.status === "pending")
+    pendingPayments = payments
+        ? Object.entries(payments).filter(([, p]) => p && p.status === "pending")
         : [];
 
-    const pendingRollEntries = rollReqRaw && typeof rollReqRaw === "object"
-        ? Object.entries(rollReqRaw).filter(([, r]) => r && r.status === "pending")
+    pendingRollEntries = rollReqRaw && typeof rollReqRaw === "object"
+        ? Object.entries(rollReqRaw).filter(([, r]) => r && (!r.status || r.status === "pending"))
         : [];
+
+    const rollQueueEntries = rollReqRaw && typeof rollReqRaw === "object"
+        ? Object.entries(rollReqRaw).filter(([, r]) => r && (!r.status || r.status === "pending" || r.status === "approved"))
+        : [];
+
+    pruneStalePaymentDismissals(payments || {});
+    const dismissedPay = getPaymentQueueDismissedKeys();
 
     document.getElementById("statTotal").textContent = entries.length;
     document.getElementById("statSignedUp").textContent = signedUp;
@@ -211,8 +313,8 @@ async function loadAdminDashboard() {
     }
 
     renderUsersTable(entries);
-    renderPendingRollQueue(pendingRollEntries);
-    renderPaymentQueue(pendingPayments, payments ? payments : {});
+    renderPendingRollQueue(rollQueueEntries);
+    renderPaymentQueue(pendingPayments, payments ? payments : {}, dismissedPay);
 
     // Revenue = sum of approved payment amounts
     const allPaymentEntries = payments ? Object.values(payments) : [];
@@ -233,6 +335,7 @@ function renderPendingRollQueue(entries) {
     if (!entries.length) {
         tbody.innerHTML = "";
         empty.style.display = "block";
+        empty.textContent = "No roll requests in the queue";
         return;
     }
     empty.style.display = "none";
@@ -242,31 +345,61 @@ function renderPendingRollQueue(entries) {
         const ts = r.submitted_at
             ? new Date(r.submitted_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
             : "—";
+        const isApproved = r.status === "approved";
+        const approvedTs = r.approved_at
+            ? new Date(r.approved_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
+            : "—";
+        const statusCell = isApproved
+            ? `<span style="color:var(--green);font-size:.83rem;font-weight:600;">Approved</span>${r.auto_approved ? ' <span style="font-size:.72rem;color:var(--text3);">(auto)</span>' : ""}<div style="font-size:.75rem;color:var(--text3);margin-top:4px;">${approvedTs}</div>`
+            : `<span style="color:var(--yellow);font-size:.83rem;">Pending review</span>`;
+        const actions = isApproved
+            ? `<button type="button" class="btn btn-xs btn-outline" onclick='dismissApprovedRollRequest(${JSON.stringify(roll)})'>Dismiss</button>`
+            : `<div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-xs btn-green" onclick='approvePendingRoll(${JSON.stringify(roll)})'>Approve</button>
+                    <button type="button" class="btn btn-xs btn-red" onclick='rejectPendingRoll(${JSON.stringify(roll)})'>Reject</button>
+                </div>`;
         return `<tr id="pendingRollRow_${roll}">
             <td style="font-weight:600;font-variant-numeric:tabular-nums;">${r.roll_number || roll}</td>
             <td style="font-size:.85rem;color:var(--text2);">${ts}</td>
-            <td>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    <button class="btn btn-xs btn-green" onclick="approvePendingRoll(${JSON.stringify(roll)})">Approve</button>
-                    <button class="btn btn-xs btn-red" onclick="rejectPendingRoll(${JSON.stringify(roll)})">Reject</button>
-                </div>
-            </td>
+            <td style="vertical-align:top;">${statusCell}</td>
+            <td>${actions}</td>
         </tr>`;
     }).join("");
+}
+
+async function _approvePendingRollCore(roll, opts) {
+    const auto = opts && opts.auto;
+    const existing = await fbGet(`users/${roll}`);
+    if (!existing) {
+        await fbUpdate(`users/${roll}`, { roll_number: roll, plan: "GO" });
+    }
+    const patch = {
+        status: "approved",
+        approved_at: Date.now(),
+        roll_number: roll
+    };
+    if (auto) patch.auto_approved = true;
+    await fbUpdate(`pending_roll_requests/${roll}`, patch);
 }
 
 async function approvePendingRoll(roll) {
     if (!roll) return;
     if (!confirm(`Approve roll ${roll} and create a GO account stub (if missing)?`)) return;
     try {
-        const existing = await fbGet(`users/${roll}`);
-        if (!existing) {
-            await fbUpdate(`users/${roll}`, { roll_number: roll, plan: "GO" });
-        }
-        await fbDelete(`pending_roll_requests/${roll}`);
+        await _approvePendingRollCore(roll, { auto: false });
         await loadAdminDashboard();
     } catch (e) {
         alert("Approve failed: " + (e && e.message ? e.message : String(e)));
+    }
+}
+
+async function dismissApprovedRollRequest(roll) {
+    if (!roll) return;
+    try {
+        await fbDelete(`pending_roll_requests/${roll}`);
+        await loadAdminDashboard();
+    } catch (e) {
+        alert("Dismiss failed: " + (e && e.message ? e.message : String(e)));
     }
 }
 
@@ -346,7 +479,7 @@ function renderUsersTable(entries) {
             ? `<button class="btn btn-xs btn-green" onclick="unsuspendUser('${roll}')">Unsuspend</button>`
             : `<button class="btn btn-xs btn-red"   onclick="suspendUser('${roll}')">Suspend</button>`
         }
-                    <button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red);" onclick="deleteUserAccount(${JSON.stringify(roll)})">Delete account</button>
+                    <button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red);" onclick='deleteUserAccount(${JSON.stringify(roll)})'>Delete account</button>
                 </div>
             </td>
         </tr>`;
@@ -543,80 +676,101 @@ function _drawPaymentLog(entries) {
 }
 
 // ── Payment Queue ─────────────────────────────────────
-function renderPaymentQueue(pendingEntries, allPayments) {
+function renderPaymentQueue(pendingEntries, allPayments, dismissedPay) {
     const list = document.getElementById("paymentQueueList");
     const empty = document.getElementById("paymentQueueEmpty");
+    const hint = document.getElementById("paymentQueueHint");
+    if (!list || !empty) return;
 
-    if (!pendingEntries.length) {
+    const dismissed = dismissedPay || new Set();
+
+    const approvedSticky = [];
+    if (allPayments && typeof allPayments === "object") {
+        for (const [key, p] of Object.entries(allPayments)) {
+            if (p && p.status === "approved" && p.show_in_admin_queue && !dismissed.has(key)) {
+                approvedSticky.push([key, p]);
+            }
+        }
+    }
+
+    const combined = [
+        ...pendingEntries.map((entry) => ({ kind: "pending", entry })),
+        ...approvedSticky.map((entry) => ({ kind: "approved", entry }))
+    ];
+    combined.sort((a, b) => (b.entry[1].submitted_at || 0) - (a.entry[1].submitted_at || 0));
+
+    if (hint) {
+        hint.style.display = approvedSticky.length > 0 ? "block" : "none";
+    }
+
+    if (!combined.length) {
         list.innerHTML = "";
         empty.style.display = "block";
         return;
     }
     empty.style.display = "none";
 
-    // Sort newest first
-    pendingEntries.sort((a, b) => (b[1].submitted_at || 0) - (a[1].submitted_at || 0));
-
-    list.innerHTML = pendingEntries.map(([key, p]) => {
+    list.innerHTML = combined.map(({ kind, entry: [key, p] }) => {
         const ts = p.submitted_at ? new Date(p.submitted_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
+        const reviewed = p.reviewed_at ? new Date(p.reviewed_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
+        const thumb = p.screenshot_url
+            ? `<img class="queue-thumb" src="${p.screenshot_url}" alt="Screenshot" onclick='openLightbox(${JSON.stringify(p.screenshot_url)})'>`
+            : `<div class="queue-thumb" style="display:flex;align-items:center;justify-content:center;background:var(--bg2);color:var(--text3);font-size:.75rem;">No image</div>`;
+        const statusBlock = kind === "approved"
+            ? `<p style="margin-top:6px;color:var(--green);font-weight:600;font-size:.85rem;">Approved${p.auto_approved ? " <span style=\"color:var(--text3);font-weight:400;font-size:.75rem;\">(auto)</span>" : ""}</p><p style="margin-top:2px;font-size:.8rem;color:var(--text3);">Reviewed: ${reviewed}</p>`
+            : "";
+        const actions = kind === "pending"
+            ? `<div class="queue-actions">
+                    <button type="button" class="btn btn-green btn-sm" onclick='approvePayment(${JSON.stringify(key)}, ${JSON.stringify(p.roll_number)}, ${JSON.stringify(p.requested_plan)})'>✓ Approve</button>
+                    <button type="button" class="btn btn-red btn-sm" onclick='rejectPayment(${JSON.stringify(key)}, ${JSON.stringify(p.roll_number)})'>✗ Reject</button>
+                    ${p.screenshot_url ? `<a href="${p.screenshot_url}" target="_blank" class="btn btn-outline btn-sm">Full Image</a>` : ""}
+                </div>`
+            : `<div class="queue-actions">
+                    <button type="button" class="btn btn-outline btn-sm" onclick='dismissPaymentQueueCard(${JSON.stringify(key)})'>Dismiss</button>
+                    ${p.screenshot_url ? `<a href="${p.screenshot_url}" target="_blank" class="btn btn-outline btn-sm">Full Image</a>` : ""}
+                </div>`;
         return `
-        <div class="card queue-card" id="queueCard_${key}">
-            <img class="queue-thumb" src="${p.screenshot_url}" alt="Screenshot" onclick="openLightbox('${p.screenshot_url}')">
+        <div class="card queue-card" id="queueCard_${key.replace(/[^a-zA-Z0-9_-]/g, "_")}">
+            ${thumb}
             <div class="queue-info">
                 <strong>${p.roll_number || ""}</strong> — ${p.name || ""}
-                <p>Requested: <strong>${p.requested_plan}</strong> &nbsp;·&nbsp; ₹${p.amount}</p>
+                <p>Requested: <strong>${p.requested_plan || "—"}</strong> &nbsp;·&nbsp; ₹${p.amount ?? "—"}</p>
                 <p style="margin-top:2px;">Submitted: ${ts}</p>
-                <div class="queue-actions">
-                    <button class="btn btn-green btn-sm" onclick="approvePayment('${key}', '${p.roll_number}', '${p.requested_plan}')">
-                        ✓ Approve
-                    </button>
-                    <button class="btn btn-red btn-sm" onclick="rejectPayment('${key}', '${p.roll_number}')">
-                        ✗ Reject
-                    </button>
-                    <a href="${p.screenshot_url}" target="_blank" class="btn btn-outline btn-sm">Full Image</a>
-                </div>
+                ${statusBlock}
+                ${actions}
             </div>
         </div>`;
     }).join("");
 }
 
-async function approvePayment(key, roll, plan) {
-    // Automatically apply the addon logic
+async function _approvePaymentCore(key, roll, plan, opts) {
+    if (!roll || !plan) {
+        throw new Error("Missing roll or plan on payment request");
+    }
     await applyAddon(roll, plan);
+    const patch = { status: "approved", reviewed_at: Date.now(), show_in_admin_queue: true };
+    if (opts && opts.auto) patch.auto_approved = true;
+    await fbUpdate(`payment_requests/${key}`, patch);
+}
 
-    // Mark payment as approved
-    await fbUpdate(`payment_requests/${key}`, { status: "approved", reviewed_at: Date.now() });
-
-    // Remove card with animation
-    const card = document.getElementById(`queueCard_${key}`);
-    if (card) { card.style.opacity = "0"; card.style.transition = "opacity .3s"; setTimeout(() => card.remove(), 350); }
-
-    // Update stats
-    document.getElementById("statPro").textContent = Object.values(allUsers).filter(u => {
-        const a = (u && u.active_addons) || {};
-        return !a.super_pass && ((a.ai_addon_expiry && Date.now() < a.ai_addon_expiry) || (a.sync_app_expiry && Date.now() < a.sync_app_expiry));
-    }).length;
-    document.getElementById("statSuper").textContent = Object.values(allUsers).filter(u => u.active_addons && u.active_addons.super_pass).length;
-
-    // Decrease badge
-    const b = document.getElementById("paymentNotifBadge");
-    const n = parseInt(b.textContent) - 1;
-    if (n <= 0) b.style.display = "none"; else b.textContent = n;
-    document.getElementById("statPending").textContent = Math.max(0, n);
+async function approvePayment(key, roll, plan) {
+    try {
+        await _approvePaymentCore(key, roll, plan, { auto: false });
+        await loadAdminDashboard();
+    } catch (e) {
+        alert("Approve failed: " + (e && e.message ? e.message : String(e)));
+    }
 }
 
 async function rejectPayment(key, roll) {
     if (!confirm("Reject this payment? The user will keep their current plan.")) return;
-    await fbUpdate(`payment_requests/${key}`, { status: "rejected", reviewed_at: Date.now() });
-    await fbUpdate(`users/${roll}`, { pending_plan: null, pending_submitted_at: null });
-
-    const card = document.getElementById(`queueCard_${key}`);
-    if (card) { card.style.opacity = "0"; card.style.transition = "opacity .3s"; setTimeout(() => card.remove(), 350); }
-
-    const b = document.getElementById("paymentNotifBadge");
-    const n = parseInt(b.textContent) - 1;
-    if (n <= 0) b.style.display = "none"; else b.textContent = n;
-    document.getElementById("statPending").textContent = Math.max(0, n);
+    try {
+        await fbUpdate(`payment_requests/${key}`, { status: "rejected", reviewed_at: Date.now() });
+        if (roll) await fbUpdate(`users/${roll}`, { pending_plan: null, pending_submitted_at: null });
+        await loadAdminDashboard();
+    } catch (e) {
+        alert("Reject failed: " + (e && e.message ? e.message : String(e)));
+    }
 }
 
 // ── Edit User Password ─────────────────────────────────
