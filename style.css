@@ -1688,18 +1688,7 @@ table.admin-table select {
     margin-bottom: 8px;
 }
 
-.linux-tutorial-gif-link {
-    display: block;
-    max-width: 680px;
-    line-height: 0;
-}
-
-.linux-tutorial-gif-link:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-}
-
-.linux-tutorial-gif {
+.linux-tutorial-video {
     display: block;
     width: 100%;
     height: auto;
@@ -1708,7 +1697,11 @@ table.admin-table select {
     border-radius: 10px;
     background: #0b0f19;
     object-fit: contain;
-    vertical-align: middle;
+}
+
+.linux-tutorial-video:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
 }
 
 .linux-tutorial-hint {
