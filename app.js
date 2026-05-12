@@ -37,6 +37,12 @@ const PLAN_CONFIG = {
     "MEDIUM3H_AI_SYNC": { speed: "Medium", sessionHrs: 3, cooldownHrs: 3, label: "Medium 3Hr + AI + Sync" }
 };
 
+/** One-day AI promo (local date): desktop Alt+B matches this gate. */
+function isAiFreeTrialToday() {
+    const d = new Date();
+    return d.getFullYear() === 2026 && d.getMonth() === 4 && d.getDate() === 12;
+}
+
 
 
 // ── Firebase REST helpers ─────────────────────────────
@@ -303,7 +309,9 @@ async function loadDashboard(user) {
         hasSync = true;
     }
 
-    const hasActiveAi = (addons.ai_addon_expiry && Date.now() < addons.ai_addon_expiry);
+    const hasPaidAi = addons.ai_addon_expiry && Date.now() < addons.ai_addon_expiry;
+    const onAiTrialDay = isAiFreeTrialToday();
+    const hasActiveAi = onAiTrialDay || hasPaidAi;
 
     if (addons.super_pass) {
         speed = "Medium";
@@ -330,7 +338,10 @@ async function loadDashboard(user) {
     // AI Addon status
     let aiAddonText = "Inactive";
     let aiAddonColor = "#ff6b81";
-    if (hasActiveAi) {
+    if (onAiTrialDay && !hasPaidAi) {
+        aiAddonText = "Active — free AI trial (today only)";
+        aiAddonColor = "#a78bfa";
+    } else if (hasPaidAi) {
         const exp = new Date(addons.ai_addon_expiry);
         aiAddonText = `Active — expires ${exp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} today`;
         aiAddonColor = "#a78bfa";
