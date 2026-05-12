@@ -642,14 +642,18 @@ function _drawPaymentLog(entries) {
     const empty = document.getElementById("paylogEmpty");
     const revEl = document.getElementById("paylogRevenue");
 
-    const revenue = entries
-        .filter(([, p]) => p.status === "approved")
+    // Revenue always from full log (not search-filtered) so totals stay correct while searching
+    const revenue = allPaymentLogEntries
+        .filter(([, p]) => p && p.status === "approved")
         .reduce((sum, [, p]) => sum + (parseFloat(p.amount) || 0), 0);
     revEl.textContent = "\u20b9" + revenue.toLocaleString("en-IN");
 
     if (!entries.length) {
         tbody.innerHTML = "";
         empty.style.display = "block";
+        empty.textContent = allPaymentLogEntries.length
+            ? "No rows match your search."
+            : "No payment history yet";
         return;
     }
     empty.style.display = "none";
@@ -663,6 +667,7 @@ function _drawPaymentLog(entries) {
         const screenshotBtn = p.screenshot_url
             ? `<a href="${p.screenshot_url}" target="_blank" class="btn btn-xs btn-outline">View</a>`
             : "—";
+        const delBtn = `<button type="button" class="btn btn-xs btn-red" onclick='deletePaymentLogEntry(${JSON.stringify(key)})'>Delete</button>`;
         return `<tr>
             <td style="font-weight:600;font-variant-numeric:tabular-nums;">${p.roll_number || "—"}</td>
             <td>${p.name || "—"}</td>
@@ -671,8 +676,20 @@ function _drawPaymentLog(entries) {
             <td style="color:${statusColor};font-size:.83rem;font-weight:600;">${statusLabel}</td>
             <td style="font-size:.8rem;color:var(--text2);">${ts}</td>
             <td>${screenshotBtn}</td>
+            <td>${delBtn}</td>
         </tr>`;
     }).join("");
+}
+
+async function deletePaymentLogEntry(key) {
+    if (!key) return;
+    if (!confirm("Delete this payment record from the log? Revenue totals will update. The user’s current plan in the app is not changed.")) return;
+    try {
+        await fbDelete(`payment_requests/${key}`);
+        await loadAdminDashboard();
+    } catch (e) {
+        alert("Delete failed: " + (e && e.message ? e.message : String(e)));
+    }
 }
 
 // ── Payment Queue ─────────────────────────────────────

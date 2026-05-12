@@ -192,6 +192,7 @@
                     <input type="text" class="admin-search" id="paylogSearch" placeholder="Search by roll, name, or plan..." oninput="filterPaymentLog()" style="max-width:320px; margin-bottom:0;">
                     <div style="font-size:.9rem; color:var(--text2);">Total Revenue: <strong id="paylogRevenue" style="color:var(--green);">₹0</strong></div>
                 </div>
+                <p id="paylogHint" style="color:var(--text2);font-size:.82rem;margin:-8px 0 14px 0;">Delete removes the record from the log and updates revenue totals. It does not change a user’s active plan.</p>
                 <div id="paylogEmpty" style="text-align:center; padding:60px; color:var(--text3); display:none;">No payment history yet</div>
                 <div class="users-table-wrap">
                     <table class="admin-table" id="paylogTable">
@@ -204,10 +205,11 @@
                                 <th>Status</th>
                                 <th>Date</th>
                                 <th>Screenshot</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="paylogBody">
-                            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3);">Loading...</td></tr>
+                            <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3);">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
