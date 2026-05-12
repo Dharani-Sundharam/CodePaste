@@ -130,7 +130,7 @@
             <div>
                 <h4>Before You Start</h4>
                 <ul>
-                    <li>Windows 10 / 11 (64-bit) or Ubuntu 18.04+ / equivalent 64-bit Linux for the desktop app (official AppImage is built for broad Ubuntu coverage — see Linux guide)</li>
+                    <li>Windows 10 / 11 (64-bit) or Ubuntu 18.04+ / equivalent <strong>amd64</strong> Linux for the CLI/desktop app — see <strong>Linux Installation Guide</strong> below for the standalone binary</li>
                     <li>A CTpaste account (create one in under a minute)</li>
                     <li>Your IDE open and ready (VS Code, IntelliJ, Eclipse, etc.)</li>
                 </ul>
@@ -160,7 +160,7 @@
                 <div class="timeline-marker">3</div>
                 <div class="timeline-content">
                     <h3>Start Session</h3>
-                    <p>Open <code>CTpaste.exe</code> or <code>CTpaste.AppImage</code>, log in, and click <strong>Start</strong> so the app is ready.</p>
+                    <p><strong>Windows:</strong> open <code>CTpaste.exe</code>, log in, and click <strong>Start</strong>. <strong>Linux:</strong> run the <code>CTpaste</code> binary in a terminal (see Linux guide), answer <strong>Y</strong> when asked to start listening — no separate GUI window.</p>
                 </div>
             </div>
 
@@ -205,19 +205,24 @@
 
         <!-- Linux Guide -->
         <div class="linux-guide">
-            <h3>🐧 Linux Installation Guide</h3>
-            <p>CTpaste ships as a self-contained <strong class="text-accent">AppImage</strong> — <strong>CLI on Linux</strong> (no GUI): double-click or run <code class="code-green">./CTpaste-x86_64.AppImage</code> in a terminal; it asks for your registration number and password, shows your plan and hotkeys, then <strong>Y/N</strong> to start listening (Alt+V paste, Alt+B/G/N for AI). Advanced: <code class="code-green">./CTpaste-x86_64.AppImage run --help</code>. Windows keeps the graphical app.</p>
+            <h3>🐧 Linux Installation Guide (Ubuntu &amp; Debian-based)</h3>
+            <p>Linux uses a <strong class="text-accent">single executable</strong> (<strong>CLI</strong>, no GUI — everything bundled with PyInstaller <code>--onefile</code>). After you run it, you enter your registration number and password, see a short summary, then <strong>Y/N</strong> to start listening for <strong>Alt+V</strong> (paste), <strong>Alt+B</strong> / <strong>Alt+G</strong> / <strong>Alt+N</strong> (AI). Windows users keep the graphical <code>.exe</code>.</p>
+
+            <p class="linux-tutorial-title" style="margin-top:1rem;font-weight:700;color:#a5b4fc;">Standalone binary</p>
             <ol>
-                <li>Download <strong>CTpaste.AppImage</strong> from the <a href="#download">Download section</a>. For Ubuntu 22.04+, also grab <strong>run-ctpaste-appimage.sh</strong> from the same GitHub release or from <code>CTpaste-Desktop/linux/</code> in the repository.</li>
-                <li>Make it executable — right-click → <strong>Properties → Permissions → Allow executing as program</strong>,
-                    or run: <code class="code-green">chmod +x CTpaste*.AppImage run-ctpaste-appimage.sh</code></li>
-                <li>On <strong>Ubuntu 22.04 / 24.04</strong>, prefer: <code class="code-green">./run-ctpaste-appimage.sh</code> (avoids classic FUSE / libfuse2 issues). Otherwise double-click or <code class="code-green">./CTpaste-x86_64.AppImage</code>.</li>
+                <li>Download <strong>CTpaste</strong> from the <a href="#download">Linux row</a> below (one file, no installer).</li>
+                <li>Open a terminal in the folder where you saved it (e.g. <code class="code-green">cd ~/Downloads</code>).</li>
+                <li>Allow execute permission: <code class="code-green">chmod +x CTpaste</code>  
+                    (or right‑click → <strong>Properties → Permissions → Execute</strong>).</li>
+                <li>Run: <code class="code-green">./CTpaste</code> — follow the prompts; press <strong>Y</strong> + Enter to start hotkeys. Stop with <strong>Ctrl+C</strong>.</li>
+                <li>Optional — install into PATH: <code class="code-green">sudo cp CTpaste /usr/local/bin/ctpaste && sudo chmod +x /usr/local/bin/ctpaste</code> then run <code class="code-green">ctpaste</code> from anywhere.</li>
             </ol>
+
             <div class="linux-tutorial-wrap">
-                <p class="linux-tutorial-title">Quick walkthrough:</p>
-                <img src="assets/tutorial.gif" alt="Linux AppImage install tutorial" class="linux-tutorial-gif">
+                <p class="linux-tutorial-title">Quick walkthrough</p>
+                <img src="assets/tutorial.gif?v=20260512" alt="Terminal walkthrough: chmod +x, run ./CTpaste, registration and hotkey prompt on Linux" class="linux-tutorial-gif" loading="lazy" decoding="async">
             </div>
-            <p class="warning-note">⚠ <strong>Compatibility:</strong> Release AppImages should be built on <strong>Ubuntu 18.04</strong> (or use <code class="code-green">docker-build-appimage-bionic.sh</code> in the repo) so they run on <strong>18.04 → 24.04+</strong> with the same glibc baseline. Building on a newer Ubuntu only produces a binary for <em>that</em> glibc or newer. <strong>Global hotkeys</strong> (Alt+V, Alt+B, …) need an <strong>X11</strong> session on Linux — on Wayland use <strong>Ubuntu on Xorg</strong> at login, or use in-app &quot;Paste from clipboard&quot; and <strong>evdev</strong> for AI capture (add your user to the <code>input</code> group; see Linux README).</p>
+            <p class="warning-note">⚠ <strong>Compatibility:</strong> Official Linux builds should be produced on <strong>Ubuntu 18.04</strong> (or the repo’s Docker Bionic scripts) so the binary runs on <strong>18.04 → 24.04+</strong> on <strong>amd64</strong>. A binary built only on Ubuntu 22.04 may fail on 18.04 with a <strong>GLIBC</strong> error. <strong>Global hotkeys</strong> need <strong>X11</strong> on many setups — choose <strong>Ubuntu on Xorg</strong> at login if Alt+V fails on Wayland; for AI capture, add your user to the <code>input</code> group for <strong>evdev</strong> (see project README).</p>
         </div>
 
     </div>
@@ -258,10 +263,10 @@
                 </div>
                 <div class="download-info">
                     <h3>Linux</h3>
-                    <span class="download-meta">Ubuntu 18.04+ (amd64) when built on 18.04 · ~150 MB · .AppImage</span>
+                    <span class="download-meta">Ubuntu 18.04+ · 64-bit (amd64) · single executable · ~60–90 MB</span>
                 </div>
                 <div id="linuxDownloadArea">
-                    <a href="https://github.com/Dharani-Sundharam/CodePaste/releases/download/v1.0.0/ctpaste" id="linuxDownloadBtn" class="btn btn-primary btn-sm btn-full">Download .AppImage</a>
+                    <a href="https://github.com/Dharani-Sundharam/CodePaste/releases/download/v1.0.0/CTpaste" id="linuxDownloadBtn" class="btn btn-primary btn-sm btn-full">Download CTpaste (Linux)</a>
                 </div>
             </div>
 
