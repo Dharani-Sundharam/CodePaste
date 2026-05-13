@@ -14,6 +14,10 @@ const DB_URL = FIREBASE_CONFIG.databaseURL;
 const API_KEY = FIREBASE_CONFIG.apiKey;
 const BUCKET = FIREBASE_CONFIG.storageBucket;
 
+/** When true, dashboard hides plan upgrades and rejects payment submissions. Set to false to accept payments again. */
+const PAYMENTS_DISABLED = true;
+window.PAYMENTS_DISABLED = PAYMENTS_DISABLED;
+
 // Same CallMeBot credentials as dashboard.html (payment alerts).
 const WHATSAPP_PHONE = "+919626262428";
 const WHATSAPP_APIKEY = "4667147";
@@ -362,5 +366,19 @@ async function loadDashboard(user) {
         const t = userData.pending_submitted_at;
         if (t) document.getElementById("pendingSubmittedAt").textContent = "Submitted: " + new Date(t).toLocaleString();
         document.getElementById("paymentSection").style.display = "none";
+    }
+
+    const paymentsDisabledNotice = document.getElementById("paymentsDisabledNotice");
+    if (PAYMENTS_DISABLED) {
+        document.getElementById("paymentSection").style.display = "none";
+        if (paymentsDisabledNotice) {
+            paymentsDisabledNotice.style.display =
+                !userData.suspended && !userData.pending_plan ? "block" : "none";
+        }
+    } else {
+        if (paymentsDisabledNotice) paymentsDisabledNotice.style.display = "none";
+        if (!userData.suspended && !userData.pending_plan) {
+            document.getElementById("paymentSection").style.display = "";
+        }
     }
 }

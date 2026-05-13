@@ -619,6 +619,14 @@
             </div>
         </div>
 
+        <!-- Shown when PAYMENTS_DISABLED is true in app.js (plan upgrades turned off) -->
+        <div id="paymentsDisabledNotice" class="card" style="display:none; border-color:var(--text3);">
+            <h3>Plan upgrades unavailable</h3>
+            <p style="font-size:.88rem; color:var(--text2); line-height:1.55;">
+                Paid upgrades are temporarily not accepted. Your current plan is unchanged. If you already submitted a payment, check the notice above or contact admin.
+            </p>
+        </div>
+
         <!-- Pending payment notice -->
         <div id="pendingNotice" class="card" style="display:none; border-color:var(--yellow);">
             <h3>Payment Under Review</h3>
@@ -807,6 +815,7 @@
         }
 
         function selectPlanCard(card) {
+            if (window.PAYMENTS_DISABLED) return;
             document.querySelectorAll('.pay-plan-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             const sel = document.getElementById('planSelect');
@@ -845,6 +854,7 @@
         }
 
         function onPlanSelected() {
+            if (window.PAYMENTS_DISABLED) return;
             const val = document.getElementById("planSelect").value;
             const qrPanel = document.getElementById("qrPanel");
 
@@ -881,6 +891,10 @@
         }
 
         async function submitPayment() {
+            if (window.PAYMENTS_DISABLED) {
+                showStatus("statusMsg", "Payments are not being accepted right now.", "error");
+                return;
+            }
             const user = getLoggedInUser();
             if (!user || !selectedFile) return;
 
