@@ -413,6 +413,13 @@
 
     <script src="roll_format.js"></script>
     <script src="app.js"></script>
+    <script>
+        // Gate: must accept T&C before login
+        if (sessionStorage.getItem('tnc_accepted') !== '1') {
+            sessionStorage.setItem('tnc_dest', 'auth.html');
+            window.location.replace('terms.html');
+        }
+    </script>
 </body>
 
 </html>
