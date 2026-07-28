@@ -150,7 +150,7 @@ function startRealTimeListeners() {
 
     // --- Payments stream ---
     if (paymentsStream) paymentsStream.close();
-    paymentsStream = new EventSource(`${base}/payment_requests.json?stream=true`);
+    paymentsStream = new EventSource(`${base}/payment_queue.json?stream=true`);
     paymentsStream.addEventListener("put", (e) => {
         _handlePaymentStreamEvent(e);
     });
@@ -216,46 +216,31 @@ function switchTab(tab) {
 async function loadAdminDashboard() {
     syncAutoApproveCheckboxes();
 
-    let [usersRaw, payments, rollReqRaw] = await Promise.all([
+    let [usersRaw, paymentQueue, rollReqRaw] = await Promise.all([
         fbGet("users"),
-        fbGet("payment_requests"),
+        fbGet("payment_queue"),
         fbGet("pending_roll_requests")
     ]);
 
-    let pendingPayments = payments
-        ? Object.entries(payments).filter(([, p]) => p && p.status === "pending")
+    let pendingPayments = paymentQueue
+        ? Object.entries(paymentQueue).filter(([, p]) => p && p.status === "pending")
         : [];
 
     let pendingRollEntries = rollReqRaw && typeof rollReqRaw === "object"
         ? Object.entries(rollReqRaw).filter(([, r]) => r && (!r.status || r.status === "pending"))
         : [];
 
+    // Auto-approve rolls if enabled
     let didAuto = false;
     if (getAutoApproveRollsOn() && pendingRollEntries.length) {
         for (const [roll] of pendingRollEntries) {
-            try {
-                await _approvePendingRollCore(roll, { auto: true });
-                didAuto = true;
-            } catch (e) {
-                console.warn("Auto-approve roll failed", roll, e);
-            }
-        }
-    }
-    if (getAutoApprovePaymentsOn() && pendingPayments.length) {
-        for (const [key, p] of pendingPayments) {
-            try {
-                await _approvePaymentCore(key, p.roll_number, p.requested_plan, { auto: true });
-                didAuto = true;
-            } catch (e) {
-                console.warn("Auto-approve payment failed", key, e);
-            }
+            try { await _approvePendingRollCore(roll, { auto: true }); didAuto = true; }
+            catch (e) { console.warn("Auto-approve roll failed", roll, e); }
         }
     }
     if (didAuto) {
-        [usersRaw, payments, rollReqRaw] = await Promise.all([
-            fbGet("users"),
-            fbGet("payment_requests"),
-            fbGet("pending_roll_requests")
+        [usersRaw, paymentQueue, rollReqRaw] = await Promise.all([
+            fbGet("users"), fbGet("payment_queue"), fbGet("pending_roll_requests")
         ]);
     }
 
@@ -263,16 +248,11 @@ async function loadAdminDashboard() {
     allUsers = usersAfter;
     const entries = Object.entries(usersAfter);
     const signedUp = entries.filter(([, u]) => (u.password || u.password_hash)).length;
-    const superCount = entries.filter(([, u]) => u.active_addons && u.active_addons.super_pass).length;
-    const proCount = entries.filter(([, u]) => {
-        const a = u.active_addons || {};
-        return !a.super_pass && ((a.ai_addon_expiry && Date.now() < a.ai_addon_expiry) || (a.sync_app_expiry && Date.now() < a.sync_app_expiry));
-    }).length;
-    const goCount = entries.filter(([, u]) => !u.active_addons || (!u.active_addons.speed_boost && !u.active_addons.extra_hours_added && !u.active_addons.super_pass)).length;
     const suspended = entries.filter(([, u]) => u.suspended).length;
+    const withCredits = entries.filter(([, u]) => (u.credits || 0) > 0).length;
 
-    pendingPayments = payments
-        ? Object.entries(payments).filter(([, p]) => p && p.status === "pending")
+    pendingPayments = paymentQueue
+        ? Object.entries(paymentQueue).filter(([, p]) => p && p.status === "pending")
         : [];
 
     pendingRollEntries = rollReqRaw && typeof rollReqRaw === "object"
@@ -283,14 +263,14 @@ async function loadAdminDashboard() {
         ? Object.entries(rollReqRaw).filter(([, r]) => r && (!r.status || r.status === "pending" || r.status === "approved"))
         : [];
 
-    pruneStalePaymentDismissals(payments || {});
+    pruneStalePaymentDismissals(paymentQueue || {});
     const dismissedPay = getPaymentQueueDismissedKeys();
 
     document.getElementById("statTotal").textContent = entries.length;
     document.getElementById("statSignedUp").textContent = signedUp;
-    document.getElementById("statGo").textContent = goCount;
-    document.getElementById("statPro").textContent = proCount;
-    document.getElementById("statSuper").textContent = superCount;
+    const goEl = document.getElementById("statGo"); if (goEl) goEl.textContent = withCredits;
+    const proEl = document.getElementById("statPro"); if (proEl) proEl.textContent = "—";
+    const supEl = document.getElementById("statSuper"); if (supEl) supEl.textContent = "—";
     document.getElementById("statSuspended").textContent = suspended;
     document.getElementById("statPending").textContent = pendingPayments.length;
     document.getElementById("statRollPending").textContent = pendingRollEntries.length;
@@ -299,31 +279,27 @@ async function loadAdminDashboard() {
     if (pendingRollEntries.length > 0) {
         rollBadge.style.display = "inline-flex";
         rollBadge.textContent = pendingRollEntries.length;
-    } else {
-        rollBadge.style.display = "none";
-    }
+    } else { rollBadge.style.display = "none"; }
 
-    // Payment badge
     const badge = document.getElementById("paymentNotifBadge");
     if (pendingPayments.length > 0) {
         badge.style.display = "inline-flex";
         badge.textContent = pendingPayments.length;
-    } else {
-        badge.style.display = "none";
-    }
+    } else { badge.style.display = "none"; }
 
     renderUsersTable(entries);
     renderPendingRollQueue(rollQueueEntries);
-    renderPaymentQueue(pendingPayments, payments ? payments : {}, dismissedPay);
+    renderPaymentQueue(pendingPayments, paymentQueue || {}, dismissedPay);
 
-    // Revenue = sum of approved payment amounts
-    const allPaymentEntries = payments ? Object.values(payments) : [];
+    // Revenue = sum of approved payments
+    const allPaymentEntries = paymentQueue ? Object.values(paymentQueue) : [];
     const revenue = allPaymentEntries
         .filter(p => p.status === "approved")
-        .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    document.getElementById("statRevenue").textContent = "\u20b9" + revenue.toLocaleString("en-IN");
+        .reduce((sum, p) => sum + (parseFloat(p.amount_inr) || 0), 0);
+    const revEl = document.getElementById("statRevenue");
+    if (revEl) revEl.textContent = "\u20b9" + revenue.toLocaleString("en-IN");
 
-    renderPaymentLog(payments ? Object.entries(payments) : []);
+    renderPaymentLog(paymentQueue ? Object.entries(paymentQueue) : []);
 }
 
 // ── Pending roll requests (edge-case registrations) ─────
@@ -428,24 +404,9 @@ function renderUsersTable(entries) {
         const lastLogin = u.last_login ? new Date(u.last_login).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }) : "—";
         const statusText = suspended ? "Suspended" : (isOnline ? "Online 🟢" : ((u.password || u.password_hash) ? "Offline ⭕" : "Not Registered"));
         const statusCol = suspended ? "var(--red)" : (isOnline ? "var(--green)" : "var(--text3)");
-        const hasPending = u.pending_plan ? true : false;
-
-        // Add-ons Display
-        const addons = u.active_addons || {};
-        let addonsText = "Base";
-        let parts = [];
-        if (addons.super_pass) parts.push("Medium Speed + 3 Hrs");
-
-        if (addons.sync_app_expiry && Date.now() < addons.sync_app_expiry) {
-            parts.push("Phone Sync");
-        }
-
-        if (addons.ai_addon_expiry && Date.now() < addons.ai_addon_expiry) {
-            const expTime = new Date(addons.ai_addon_expiry).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-            parts.push(`⚡ AI Addon (til ${expTime})`);
-        }
-
-        if (parts.length > 0) addonsText = parts.join(" | ");
+        const hasPending = u.pending_payment ? true : false;
+        const credits = u.credits || 0;
+        const creditsColor = credits > 1000 ? "var(--green)" : credits > 0 ? "var(--yellow)" : "var(--text3)";
 
         const uiPass = u.password
             ? `<div style="font-family:monospace; font-size: 0.9rem; margin-bottom: 4px; color:var(--text1);">${u.password}</div>`
@@ -456,112 +417,26 @@ function renderUsersTable(entries) {
             <td>${name}</td>
             <td>
                 ${uiPass}
-                <button class="btn btn-xs btn-outline" onclick="editPassword('${roll}', '${name.replace(/'/g, "\\'")}')" style="font-size: 0.7rem; padding: 2px 5px;">Edit Pass</button>
+                <button class="btn btn-xs btn-outline" onclick="editPassword('${roll}', '${name.replace(/'/g, "\\'")}')">Edit Pass</button>
             </td>
-            <td>
-                <div style="font-size: .85rem; margin-bottom: 4px; color: var(--text1);">${addonsText}</div>
-                <select onchange="applyAddon('${roll}', this.value); this.selectedIndex=0;" style="${suspended ? 'pointer-events:none;opacity:.4;' : ''}; font-size:.8rem; padding: 2px 4px;">
-                    <option value="" disabled selected>Give Add-On...</option>
-                    <option value="SYNC_APP">Phone Sync (7-Day)</option>
-                    <option value="AI_ADDON">AI Addon (Expires EOD)</option>
-                    <option value="AI_SYNC">AI + Sync</option>
-                    <option value="MEDIUM3H_AI">Medium 3Hr + AI</option>
-                    <option value="MEDIUM3H_AI_SYNC">Medium 3Hr + AI + Sync</option>
-                    <option value="RESET">Reset to Base</option>
-                </select>
+            <td style="color:${creditsColor}; font-weight:600; font-variant-numeric:tabular-nums;">
+                ${credits.toLocaleString()}
+                <div style="display:flex;gap:4px;margin-top:4px;">
+                    <button class="btn btn-xs btn-green" onclick="addCredits('${roll}', 7000)">+7000</button>
+                    <button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red);" onclick="addCredits('${roll}', -7000)">-7000</button>
+                </div>
             </td>
             <td id="status_${roll}" style="color:${statusCol};font-size:.83rem;">${statusText}</td>
             <td id="lastLogin_${roll}" style="font-size:.8rem;color:var(--text2);">${lastLogin}</td>
             <td>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                    <button class="btn btn-xs btn-outline" onclick="resetSession('${roll}')">Reset Session</button>
                     ${suspended
             ? `<button class="btn btn-xs btn-green" onclick="unsuspendUser('${roll}')">Unsuspend</button>`
-            : `<button class="btn btn-xs btn-red"   onclick="suspendUser('${roll}')">Suspend</button>`
-        }
                     <button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red);" onclick='deleteUserAccount(${JSON.stringify(roll)})'>Delete account</button>
                 </div>
             </td>
         </tr>`;
     }).join("");
-}
-
-// ── Apply Addon ────────────────────────────────────────
-async function applyAddon(roll, addonAction) {
-    if (!addonAction) return;
-
-    // Fetch fresh user data to safely stack
-    const userData = await fbGet(`users/${roll}`);
-    if (!userData) return;
-
-    let active_addons = userData.active_addons || { speed_boost: false, extra_hours_added: 0, super_pass: false };
-
-    if (addonAction === "RESET") {
-        active_addons = { speed_boost: false, extra_hours_added: 0, super_pass: false };
-        active_addons.sync_app_expiry = null;
-        active_addons.ai_addon_expiry = null;
-    } else if (addonAction === "SYNC_APP") {
-        active_addons.super_pass = false;
-        active_addons.speed_boost = false;
-        active_addons.extra_hours_added = 0;
-        active_addons.sync_app_expiry = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days from now
-    } else if (addonAction === "AI_ADDON") {
-        active_addons.super_pass = false;
-        active_addons.speed_boost = false;
-        active_addons.extra_hours_added = 0;
-        // Expires at end-of-day (midnight IST = UTC+5:30)
-        const now = new Date();
-        const istOffsetMs = 5.5 * 60 * 60 * 1000;
-        const istNow = new Date(now.getTime() + istOffsetMs);
-        const istMidnight = new Date(istNow);
-        istMidnight.setUTCHours(23, 59, 59, 999);
-        active_addons.ai_addon_expiry = istMidnight.getTime() - istOffsetMs;
-    } else if (addonAction === "AI_SYNC") {
-        active_addons.super_pass = false;
-        active_addons.speed_boost = false;
-        active_addons.extra_hours_added = 0;
-        active_addons.sync_app_expiry = Date.now() + (7 * 24 * 60 * 60 * 1000);
-        const now = new Date();
-        const istOffsetMs = 5.5 * 60 * 60 * 1000;
-        const istNow = new Date(now.getTime() + istOffsetMs);
-        const istMidnight = new Date(istNow);
-        istMidnight.setUTCHours(23, 59, 59, 999);
-        active_addons.ai_addon_expiry = istMidnight.getTime() - istOffsetMs;
-    } else if (addonAction === "MEDIUM3H_AI") {
-        active_addons.super_pass = true;
-        active_addons.speed_boost = false;
-        active_addons.extra_hours_added = 0;
-        active_addons.sync_app_expiry = null;
-        const now = new Date();
-        const istOffsetMs = 5.5 * 60 * 60 * 1000;
-        const istNow = new Date(now.getTime() + istOffsetMs);
-        const istMidnight = new Date(istNow);
-        istMidnight.setUTCHours(23, 59, 59, 999);
-        active_addons.ai_addon_expiry = istMidnight.getTime() - istOffsetMs;
-    } else if (addonAction === "MEDIUM3H_AI_SYNC") {
-        active_addons.super_pass = true;
-        active_addons.speed_boost = false;
-        active_addons.extra_hours_added = 0;
-        active_addons.sync_app_expiry = Date.now() + (7 * 24 * 60 * 60 * 1000);
-        const now = new Date();
-        const istOffsetMs = 5.5 * 60 * 60 * 1000;
-        const istNow = new Date(now.getTime() + istOffsetMs);
-        const istMidnight = new Date(istNow);
-        istMidnight.setUTCHours(23, 59, 59, 999);
-        active_addons.ai_addon_expiry = istMidnight.getTime() - istOffsetMs;
-    }
-
-    await fbUpdate(`users/${roll}`, {
-        active_addons,
-        plan_activated_by: "admin",
-        plan_activated_at: Date.now(),
-        pending_plan: null,
-        pending_submitted_at: null
-    });
-
-    allUsers[roll].active_addons = active_addons;
-    renderUsersTable(Object.entries(allUsers));
-    flashRow(roll, "rgba(88,166,255,.1)");
 }
 
 // ── Suspend / Unsuspend ────────────────────────────────
@@ -576,12 +451,6 @@ async function unsuspendUser(roll) {
     await fbUpdate(`users/${roll}`, { suspended: false });
     allUsers[roll].suspended = false;
     renderUsersTable(Object.entries(allUsers));
-}
-
-// ── Reset session ──────────────────────────────────────
-async function resetSession(roll) {
-    await fbSet(`sessions/${roll}`, null);
-    flashRow(roll, "rgba(63,185,80,.1)");
 }
 
 async function deleteUserAccount(roll) {
@@ -730,28 +599,26 @@ function renderPaymentQueue(pendingEntries, allPayments, dismissedPay) {
     list.innerHTML = combined.map(({ kind, entry: [key, p] }) => {
         const ts = p.submitted_at ? new Date(p.submitted_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
         const reviewed = p.reviewed_at ? new Date(p.reviewed_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
-        const thumb = p.screenshot_url
-            ? `<img class="queue-thumb" src="${p.screenshot_url}" alt="Screenshot" onclick='openLightbox(${JSON.stringify(p.screenshot_url)})'>`
+        const thumb = p.screenshot_b64
+            ? `<img class="queue-thumb" src="${p.screenshot_b64}" alt="Screenshot" onclick='openLightbox(${JSON.stringify(p.screenshot_b64)})'>`
             : `<div class="queue-thumb" style="display:flex;align-items:center;justify-content:center;background:var(--bg2);color:var(--text3);font-size:.75rem;">No image</div>`;
         const statusBlock = kind === "approved"
             ? `<p style="margin-top:6px;color:var(--green);font-weight:600;font-size:.85rem;">Approved${p.auto_approved ? " <span style=\"color:var(--text3);font-weight:400;font-size:.75rem;\">(auto)</span>" : ""}</p><p style="margin-top:2px;font-size:.8rem;color:var(--text3);">Reviewed: ${reviewed}</p>`
             : "";
         const actions = kind === "pending"
             ? `<div class="queue-actions">
-                    <button type="button" class="btn btn-green btn-sm" onclick='approvePayment(${JSON.stringify(key)}, ${JSON.stringify(p.roll_number)}, ${JSON.stringify(p.requested_plan)})'>✓ Approve</button>
+                    <button type="button" class="btn btn-green btn-sm" onclick='approvePayment(${JSON.stringify(key)}, ${JSON.stringify(p.roll_number)})'>✓ Approve (+7000 cr)</button>
                     <button type="button" class="btn btn-red btn-sm" onclick='rejectPayment(${JSON.stringify(key)}, ${JSON.stringify(p.roll_number)})'>✗ Reject</button>
-                    ${p.screenshot_url ? `<a href="${p.screenshot_url}" target="_blank" class="btn btn-outline btn-sm">Full Image</a>` : ""}
                 </div>`
             : `<div class="queue-actions">
                     <button type="button" class="btn btn-outline btn-sm" onclick='dismissPaymentQueueCard(${JSON.stringify(key)})'>Dismiss</button>
-                    ${p.screenshot_url ? `<a href="${p.screenshot_url}" target="_blank" class="btn btn-outline btn-sm">Full Image</a>` : ""}
                 </div>`;
         return `
         <div class="card queue-card" id="queueCard_${key.replace(/[^a-zA-Z0-9_-]/g, "_")}">
             ${thumb}
             <div class="queue-info">
-                <strong>${p.roll_number || ""}</strong> — ${p.name || ""}
-                <p>Requested: <strong>${p.requested_plan || "—"}</strong> &nbsp;·&nbsp; ₹${p.amount ?? "—"}</p>
+                <strong>${p.roll_number || ""}</strong>
+                <p>Amount: <strong>₹${p.amount_inr ?? "—"}</strong> &nbsp;·&nbsp; Credits: <strong>+${p.credits_to_add ?? 7000}</strong></p>
                 <p style="margin-top:2px;">Submitted: ${ts}</p>
                 ${statusBlock}
                 ${actions}
@@ -760,19 +627,25 @@ function renderPaymentQueue(pendingEntries, allPayments, dismissedPay) {
     }).join("");
 }
 
-async function _approvePaymentCore(key, roll, plan, opts) {
-    if (!roll || !plan) {
-        throw new Error("Missing roll or plan on payment request");
-    }
-    await applyAddon(roll, plan);
-    const patch = { status: "approved", reviewed_at: Date.now(), show_in_admin_queue: true };
-    if (opts && opts.auto) patch.auto_approved = true;
-    await fbUpdate(`payment_requests/${key}`, patch);
+async function _approvePaymentCore(key, roll) {
+    if (!roll) throw new Error("Missing roll on payment request");
+    // Add 7000 credits to user
+    const user = await fbGet(`users/${roll}`);
+    const current = (user && user.credits) || 0;
+    await fbUpdate(`users/${roll}`, {
+        credits: current + 7000,
+        pending_payment: null
+    });
+    await fbUpdate(`payment_queue/${key}`, {
+        status: "approved",
+        reviewed_at: Date.now(),
+        show_in_admin_queue: true
+    });
 }
 
-async function approvePayment(key, roll, plan) {
+async function approvePayment(key, roll) {
     try {
-        await _approvePaymentCore(key, roll, plan, { auto: false });
+        await _approvePaymentCore(key, roll);
         await loadAdminDashboard();
     } catch (e) {
         alert("Approve failed: " + (e && e.message ? e.message : String(e)));
@@ -780,10 +653,10 @@ async function approvePayment(key, roll, plan) {
 }
 
 async function rejectPayment(key, roll) {
-    if (!confirm("Reject this payment? The user will keep their current plan.")) return;
+    if (!confirm("Reject this payment? The user will not receive credits.")) return;
     try {
-        await fbUpdate(`payment_requests/${key}`, { status: "rejected", reviewed_at: Date.now() });
-        if (roll) await fbUpdate(`users/${roll}`, { pending_plan: null, pending_submitted_at: null });
+        await fbUpdate(`payment_queue/${key}`, { status: "rejected", reviewed_at: Date.now() });
+        if (roll) await fbUpdate(`users/${roll}`, { pending_payment: null });
         await loadAdminDashboard();
     } catch (e) {
         alert("Reject failed: " + (e && e.message ? e.message : String(e)));

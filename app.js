@@ -1,53 +1,16 @@
 /* ═══════════════════════════════════════════════════════
-   CTpaste — app.js  v2
-   Auth · Sessions · Payment · Firebase helpers
+   CTpaste — app.js  v3
+   Auth · Sessions · Credits · Firebase helpers
    ═══════════════════════════════════════════════════════ */
 
 const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDCwXGlANMZKKcGZudG8r7M72Uz-jNknkI",
-    projectId: "codepaste-sync",
-    databaseURL: "https://codepaste-sync-default-rtdb.asia-southeast1.firebasedatabase.app",
-    storageBucket: "codepaste-sync.firebasestorage.app"
+    apiKey: "AIzaSyBj0DiKnREPMutNn_r1w8tq3F1-K0v6MoI",
+    projectId: "codepaste-ds",
+    databaseURL: "https://codepaste-ds-default-rtdb.asia-southeast1.firebasedatabase.app",
+    storageBucket: "codepaste-ds.firebasestorage.app"
 };
 
 const DB_URL = FIREBASE_CONFIG.databaseURL;
-const API_KEY = FIREBASE_CONFIG.apiKey;
-const BUCKET = FIREBASE_CONFIG.storageBucket;
-
-/** When true, dashboard hides plan upgrades and rejects payment submissions. Set to false to accept payments again. */
-const PAYMENTS_DISABLED = true;
-window.PAYMENTS_DISABLED = PAYMENTS_DISABLED;
-
-// Same CallMeBot credentials as dashboard.html (payment alerts).
-const WHATSAPP_PHONE = "+919626262428";
-const WHATSAPP_APIKEY = "4667147";
-
-function notifyCallMeBotEdgeCaseRoll(roll) {
-    const msg = encodeURIComponent(
-        `CTpaste roll review%0ARoll: ${roll}%0ATime: ${new Date().toLocaleString("en-IN")}%0AOpen Admin → Roll requests to approve.`
-    );
-    fetch(
-        `https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${msg}&apikey=${WHATSAPP_APIKEY}`
-    ).catch(() => {});
-}
-
-// ── Plan configs ─────────────────────────────────────
-const PLAN_CONFIG = {
-    "GO": { speed: "Slow", sessionHrs: 1, cooldownHrs: 3, label: "GO (Free)" },
-    "SYNC_APP": { speed: "Slow", sessionHrs: 1, cooldownHrs: 3, label: "Phone Sync" },
-    "AI_ADDON": { speed: "Slow", sessionHrs: 1, cooldownHrs: 3, label: "AI Addon" },
-    "AI_SYNC": { speed: "Slow", sessionHrs: 1, cooldownHrs: 3, label: "AI + Phone Sync" },
-    "MEDIUM3H_AI": { speed: "Medium", sessionHrs: 3, cooldownHrs: 3, label: "Medium 3Hr + AI" },
-    "MEDIUM3H_AI_SYNC": { speed: "Medium", sessionHrs: 3, cooldownHrs: 3, label: "Medium 3Hr + AI + Sync" }
-};
-
-/** One-day AI promo (local date): desktop Alt+B matches this gate. */
-function isAiFreeTrialToday() {
-    const d = new Date();
-    return d.getFullYear() === 2026 && d.getMonth() === 4 && d.getDate() === 12;
-}
-
-
 
 // ── Firebase REST helpers ─────────────────────────────
 async function fbGet(path) {
@@ -70,14 +33,61 @@ async function fbDelete(path) {
     await fetch(`${DB_URL}/${path}.json`, { method: "DELETE" });
 }
 
+// ── Roll number validation ────────────────────────────
+function validateRollNumberFormat(roll) {
+    const s = (roll || "").trim();
+    if (s.length !== 12 || !/^\d+$/.test(s)) return { ok: false };
+    if (!s.startsWith("111")) return { ok: false };
+    const inst = s[3];
+    if (!["5","6","7"].includes(inst)) return { ok: false };
+    const yr = s.slice(4, 6);
+    if (!["24","25","26"].includes(yr)) return { ok: false };
+    const mid = s.slice(6, 8);
+    if (!["10","11"].includes(mid)) return { ok: false };
+    const dept = s[8];
+    if (!["0","1","2","3","4","5"].includes(dept)) return { ok: false };
+    const seq = parseInt(s.slice(9), 10);
+    if (seq < 1 || seq > 999) return { ok: false };
+    return { ok: true };
+}
+
+function isRollEdgeCaseSubmission(roll) {
+    const s = (roll || "").trim();
+    if (s.length < 10 || s.length > 15) return false;
+    if (!/^\d+$/.test(s)) return false;
+    if (!s.startsWith("111")) return false;
+    return true;
+}
+
+// ── WhatsApp notification for edge-case rolls ─────────
+const WHATSAPP_PHONE = "+919626262428";
+const WHATSAPP_APIKEY = "4667147";
+
+function notifyCallMeBotEdgeCaseRoll(roll) {
+    const msg = encodeURIComponent(
+        `CTpaste roll review%0ARoll: ${roll}%0ATime: ${new Date().toLocaleString("en-IN")}%0AOpen Admin → Roll requests to approve.`
+    );
+    fetch(
+        `https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${msg}&apikey=${WHATSAPP_APIKEY}`
+    ).catch(() => {});
+}
+
+function notifyCallMeBotPayment(roll, amount) {
+    const msg = encodeURIComponent(
+        `CTpaste payment%0ARoll: ${roll}%0AAmount: ₹${amount}%0ATime: ${new Date().toLocaleString("en-IN")}%0AOpen Admin → Payments to approve.`
+    );
+    fetch(
+        `https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${msg}&apikey=${WHATSAPP_APIKEY}`
+    ).catch(() => {});
+}
 
 // ── Local auth state ──────────────────────────────────
 function getLoggedInUser() {
     const d = localStorage.getItem("CTpaste_user");
     return d ? JSON.parse(d) : null;
 }
-function setLoggedInUser(rollNumber, name, plan) {
-    localStorage.setItem("CTpaste_user", JSON.stringify({ rollNumber, name, plan }));
+function setLoggedInUser(rollNumber, name) {
+    localStorage.setItem("CTpaste_user", JSON.stringify({ rollNumber, name }));
 }
 function logout() {
     localStorage.removeItem("CTpaste_user");
@@ -113,48 +123,32 @@ async function checkRollNumber() {
 
     if (fmt.ok) {
         if (!user) {
-            await fbUpdate(`users/${roll}`, { roll_number: roll, plan: "GO" });
+            await fbUpdate(`users/${roll}`, { roll_number: roll, credits: 0 });
             user = await fbGet(`users/${roll}`);
         }
     } else {
         if (user) {
-            // Account exists (e.g. admin-approved edge roll); allow login without exposing format rules.
+            // existing edge-case account — allow through
         } else if (isRollEdgeCaseSubmission(roll)) {
             const pend = await fbGet(`pending_roll_requests/${roll}`);
             if (pend && pend.status === "pending") {
                 clearStatus("statusMsg");
-                showStatus(
-                    "statusMsg",
-                    "This registration number is already under review. Please wait for admin approval before signing in.",
-                    "info"
-                );
+                showStatus("statusMsg", "This registration number is already under review. Please wait for admin approval before signing in.", "info");
                 return;
             }
             const w = await fetch(`${DB_URL}/pending_roll_requests/${roll}.json`, {
                 method: "PATCH",
-                body: JSON.stringify({
-                    roll_number: roll,
-                    submitted_at: Date.now(),
-                    status: "pending"
-                }),
+                body: JSON.stringify({ roll_number: roll, submitted_at: Date.now(), status: "pending" }),
                 headers: { "Content-Type": "application/json" }
             });
             if (!w.ok) {
                 clearStatus("statusMsg");
-                showStatus(
-                    "statusMsg",
-                    "We could not submit your registration for review. Please try again later or contact admin.",
-                    "error"
-                );
+                showStatus("statusMsg", "We could not submit your registration for review. Please try again later or contact admin.", "error");
                 return;
             }
             notifyCallMeBotEdgeCaseRoll(roll);
             clearStatus("statusMsg");
-            showStatus(
-                "statusMsg",
-                "Your registration number has been submitted for review. You can sign in after an admin approves it — check back later.",
-                "success"
-            );
+            showStatus("statusMsg", "Your registration number has been submitted for review. You can sign in after an admin approves it — check back later.", "success");
             return;
         } else {
             clearStatus("statusMsg");
@@ -205,14 +199,13 @@ async function signupUser() {
 
     await fbUpdate(`users/${currentRoll}`, { password: pass, name, last_login: Date.now() });
 
-    // Verify the write actually landed before proceeding
     const check = await fbGet(`users/${currentRoll}`);
     if (!check || check.password !== pass) {
         showStatus("statusMsg", "Could not save account — check your internet and try again.", "error");
         return;
     }
 
-    setLoggedInUser(currentRoll, name, "GO");
+    setLoggedInUser(currentRoll, name);
     showStatus("statusMsg", isReset ? "Password reset successful! Redirecting..." : "Account created! Redirecting...", "success");
     setTimeout(() => { window.location.href = "dashboard.html"; }, 900);
 }
@@ -233,7 +226,7 @@ async function loginUser() {
         showStatus("statusMsg", "Account not found. Try again.", "error"); return;
     }
 
-    // Support legacy hashed users migrating to plaintext
+    // Support legacy hashed users
     let expectedHash = null;
     try {
         if (window.crypto && crypto.subtle) {
@@ -241,7 +234,7 @@ async function loginUser() {
             const buf = await crypto.subtle.digest("SHA-256", data);
             expectedHash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
         }
-    } catch (e) { console.warn("Legacy hash generation skipped due to browser limits."); }
+    } catch (e) { console.warn("Legacy hash generation skipped."); }
 
     if (!user.password && !user.password_hash) {
         showStatus("statusMsg", "Account not fully set up — please sign up again.", "error"); return;
@@ -251,7 +244,6 @@ async function loginUser() {
         showStatus("statusMsg", "Incorrect password. Please try again.", "error"); return;
     }
 
-    // Upgrade seamlessly if they matched legacy hash
     if (!user.password && user.password_hash === expectedHash) {
         await fbUpdate(`users/${currentRoll}`, { password: pass });
     }
@@ -261,7 +253,7 @@ async function loginUser() {
     }
 
     await fbUpdate(`users/${currentRoll}`, { last_login: Date.now() });
-    setLoggedInUser(currentRoll, user.name, user.plan || "GO");
+    setLoggedInUser(currentRoll, user.name);
     showStatus("statusMsg", "Login successful! Redirecting...", "success");
     setTimeout(() => { window.location.href = "dashboard.html"; }, 700);
 }
@@ -275,7 +267,6 @@ function goBack() {
 }
 
 function resetPassword() {
-    // Show the signup form so the user can overwrite their stored hash
     document.getElementById("stepLogin").style.display = "none";
     document.getElementById("stepSignup").style.display = "block";
     document.getElementById("signupName").closest(".form-group").style.display = "none";
@@ -287,98 +278,115 @@ function resetPassword() {
 // ══════════════════════════════════════════════════════
 // DASHBOARD PAGE
 // ══════════════════════════════════════════════════════
-let sessionTimer = null;
 
 async function loadDashboard(user) {
     const userData = await fbGet(`users/${user.rollNumber}`);
     if (!userData) { logout(); return; }
 
-    // Suspended check
     if (userData.suspended) {
         document.getElementById("suspendedNotice").style.display = "block";
-        document.getElementById("suspendedNotice").className = "status-msg error";
-        document.getElementById("suspendedNotice").style.display = "block";
         document.getElementById("paymentSection").style.display = "none";
-        document.getElementById("startSessionBtn") && (document.getElementById("startSessionBtn").disabled = true);
+        return;
     }
 
-    const addons = userData.active_addons || {};
-    let speed = "Slow";
-    let hrs = 1;
-    let planLabel = "Base";
-
-    // Check Phone Sync Expiration
-    let hasSync = false;
-    if (addons.sync_app_expiry && Date.now() < addons.sync_app_expiry) {
-        hasSync = true;
-    }
-
-    const hasPaidAi = addons.ai_addon_expiry && Date.now() < addons.ai_addon_expiry;
-    const onAiTrialDay = isAiFreeTrialToday();
-    const hasActiveAi = onAiTrialDay || hasPaidAi;
-
-    if (addons.super_pass) {
-        speed = "Medium";
-        hrs = 3;
-        if (hasActiveAi && hasSync) planLabel = "Medium 3Hr + AI + Sync";
-        else if (hasActiveAi) planLabel = "Medium 3Hr + AI";
-        else if (hasSync) planLabel = "Medium 3Hr + Sync";
-        else planLabel = "Medium 3Hr";
-    } else if (hasActiveAi && hasSync) {
-        planLabel = "AI + Phone Sync";
-    } else if (hasActiveAi) {
-        planLabel = "AI Addon";
-    } else if (hasSync) {
-        planLabel = "Phone Sync";
-    }
-
-    setLoggedInUser(user.rollNumber, userData.name, planLabel);
+    const credits = userData.credits || 0;
+    setLoggedInUser(user.rollNumber, userData.name);
 
     document.getElementById("userRoll").textContent = `${userData.name}  ·  ${user.rollNumber}`;
-    document.getElementById("planName").textContent = planLabel;
-    document.getElementById("planSpeed").textContent = speed;
-    document.getElementById("planDuration").textContent = hrs + " hr" + (hrs > 1 ? "s" : "");
-
-    // AI Addon status
-    let aiAddonText = "Inactive";
-    let aiAddonColor = "#ff6b81";
-    if (onAiTrialDay && !hasPaidAi) {
-        aiAddonText = "Active — free AI trial (today only)";
-        aiAddonColor = "#a78bfa";
-    } else if (hasPaidAi) {
-        const exp = new Date(addons.ai_addon_expiry);
-        aiAddonText = `Active — expires ${exp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} today`;
-        aiAddonColor = "#a78bfa";
-    }
-
-    document.getElementById("planDetails").innerHTML = `
-        <p><strong>Speed:</strong> ${speed}</p>
-        <p><strong>Session length:</strong> ${hrs} hour${hrs > 1 ? "s" : ""}</p>
-        <p><strong>Phone Sync:</strong> <strong style="color:${hasSync ? '#43e97b' : '#ff6b81'}">${hasSync ? 'Active (7-Day Pass)' : 'Inactive'}</strong></p>
-        <p><strong>AI Addon (Alt+B):</strong> <strong style="color:${aiAddonColor}">${aiAddonText}</strong></p>
-        <p><strong>Cooldown:</strong> 2 hours after session ends</p>
-    `;
+    document.getElementById("creditsBalance").textContent = credits.toLocaleString();
 
     // Pending payment notice
-    if (userData.pending_plan) {
+    if (userData.pending_payment) {
         document.getElementById("pendingNotice").style.display = "block";
-        document.getElementById("pendingPlanName").textContent = userData.pending_plan;
-        const t = userData.pending_submitted_at;
+        const t = userData.pending_payment.submitted_at;
         if (t) document.getElementById("pendingSubmittedAt").textContent = "Submitted: " + new Date(t).toLocaleString();
         document.getElementById("paymentSection").style.display = "none";
+    } else {
+        document.getElementById("pendingNotice").style.display = "none";
+        document.getElementById("paymentSection").style.display = "";
+    }
+}
+
+// ── Screenshot compression & payment submission ───────
+function onScreenshotSelected(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const preview = document.getElementById("screenshotPreview");
+    if (!preview) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        preview.src = e.target.result;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+}
+
+async function compressImageToBase64(file, maxWidth = 800, quality = 0.5) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+                const scale = Math.min(1, maxWidth / img.width);
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL("image/jpeg", quality));
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+async function submitPayment() {
+    const user = getLoggedInUser();
+    if (!user) { logout(); return; }
+
+    const fileInput = document.getElementById("screenshotInput");
+    if (!fileInput || !fileInput.files[0]) {
+        showStatus("paymentStatus", "Please select a payment screenshot.", "error");
+        return;
     }
 
-    const paymentsDisabledNotice = document.getElementById("paymentsDisabledNotice");
-    if (PAYMENTS_DISABLED) {
+    const btn = document.getElementById("submitPaymentBtn");
+    btn.disabled = true;
+    btn.textContent = "Uploading...";
+    showStatus("paymentStatus", "Compressing and uploading screenshot...", "info");
+
+    try {
+        const b64 = await compressImageToBase64(fileInput.files[0], 800, 0.5);
+
+        const key = `${Date.now()}_${user.rollNumber}`;
+        const paymentData = {
+            roll_number: user.rollNumber,
+            amount_inr: 50,
+            credits_to_add: 7000,
+            screenshot_b64: b64,
+            status: "pending",
+            submitted_at: Date.now()
+        };
+
+        await fbSet(`payment_queue/${key}`, paymentData);
+        await fbUpdate(`users/${user.rollNumber}`, {
+            pending_payment: { submitted_at: Date.now(), key }
+        });
+
+        notifyCallMeBotPayment(user.rollNumber, 50);
+
+        showStatus("paymentStatus", "✅ Payment submitted! Admin will verify and credit 7,000 credits to your account.", "success");
         document.getElementById("paymentSection").style.display = "none";
-        if (paymentsDisabledNotice) {
-            paymentsDisabledNotice.style.display =
-                !userData.suspended && !userData.pending_plan ? "block" : "none";
-        }
-    } else {
-        if (paymentsDisabledNotice) paymentsDisabledNotice.style.display = "none";
-        if (!userData.suspended && !userData.pending_plan) {
-            document.getElementById("paymentSection").style.display = "";
-        }
+        document.getElementById("pendingNotice").style.display = "block";
+        document.getElementById("pendingSubmittedAt").textContent = "Submitted: " + new Date().toLocaleString();
+    } catch (err) {
+        showStatus("paymentStatus", "Upload failed — please try again.", "error");
+        console.error(err);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Submit Payment";
     }
 }

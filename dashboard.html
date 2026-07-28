@@ -599,48 +599,26 @@
             Your account has been suspended. Please contact the admin.
         </div>
 
-        <!-- Stats row -->
-        <div class="stat-grid">
-            <div class="card stat-card">
-                <div class="stat-label">Current Plan</div>
-                <div class="stat-value" id="planName">GO</div>
+        <!-- Credits balance -->
+        <div class="stat-grid" style="grid-template-columns: 1fr 1fr; max-width: 520px;">
+            <div class="card stat-card" style="background: linear-gradient(135deg,#1a1a3e,#23234a); border-color: #4f46e5;">
+                <div class="stat-label">Credits Balance</div>
+                <div class="stat-value" id="creditsBalance" style="font-size:2rem; color:#818cf8;">—</div>
             </div>
             <div class="card stat-card">
-                <div class="stat-label">Typing Speed</div>
-                <div class="stat-value" id="planSpeed">Slow</div>
+                <div class="stat-label">Top Up</div>
+                <div class="stat-value" style="font-size:1.1rem;">₹50 → 7,000</div>
             </div>
-            <div class="card stat-card">
-                <div class="stat-label">Session</div>
-                <div class="stat-value" id="planDuration">1 hr</div>
-            </div>
-            <div class="card stat-card">
-                <div class="stat-label">Cooldown</div>
-                <div class="stat-value">2 hrs</div>
-            </div>
-        </div>
-
-        <!-- Shown when PAYMENTS_DISABLED is true in app.js (plan upgrades turned off) -->
-        <div id="paymentsDisabledNotice" class="card" style="display:none; border-color:var(--text3);">
-            <h3>Plan upgrades unavailable</h3>
-            <p style="font-size:.88rem; color:var(--text2); line-height:1.55;">
-                Paid upgrades are temporarily not accepted. Your current plan is unchanged. If you already submitted a payment, check the notice above or contact admin.
-            </p>
         </div>
 
         <!-- Pending payment notice -->
         <div id="pendingNotice" class="card" style="display:none; border-color:var(--yellow);">
-            <h3>Payment Under Review</h3>
+            <h3>⏳ Payment Under Review</h3>
             <p style="font-size:.88rem; color:var(--text2); line-height:1.55;">
-                Your payment screenshot for <strong id="pendingPlanName"></strong> has been submitted and is pending
-                admin approval. Once approved, the plan will activate on your next app login.
+                Your ₹50 payment screenshot has been submitted and is pending admin approval.
+                Once approved, <strong>7,000 credits</strong> will be added to your account.
             </p>
             <p id="pendingSubmittedAt" style="font-size:.8rem; color:var(--text3); margin-top:12px;"></p>
-        </div>
-
-        <!-- Plan Details -->
-        <div class="card">
-            <h3>Plan Details</h3>
-            <div id="planDetails"></div>
         </div>
 
         <!-- Payment Section -->
@@ -649,133 +627,85 @@
             <!-- Header -->
             <div class="pay-header">
                 <div>
-                    <h2>Upgrade Your Plan</h2>
-                    <p>Pay via UPI — activated after admin approval</p>
+                    <h2>Top Up Credits</h2>
+                    <p>Pay ₹50 via UPI — 7,000 credits added after admin approval</p>
                 </div>
                 <span class="pay-header-secure">Secure</span>
             </div>
 
-            <div class="pay-ai-warn" role="alert">
-                <strong>Warning — AI access:</strong> If your plan includes AI, it only works until <strong>midnight tonight</strong> (end of today). It is <strong>not</strong> extended into tomorrow!
+            <!-- Single payment card -->
+            <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+                <div class="card" style="flex:1; min-width:220px; padding:24px; border-color:#4f46e5; background:linear-gradient(135deg,#1a1a3e,#1e1e48);">
+                    <div style="font-size:1.5rem; font-weight:800; color:#818cf8; margin-bottom:4px;">₹50</div>
+                    <div style="font-size:.9rem; color:var(--text2); margin-bottom:12px;">7,000 Credits · One-time top-up</div>
+                    <div style="font-size:.78rem; color:var(--text3);">Credits are deducted as you type (chars ÷ 1.5)</div>
+                </div>
             </div>
 
-            <!-- Plan Cards Grid -->
-            <div id="planCardsGrid">
-
-                <div class="pay-plan-card" data-value="SYNC_APP:35" onclick="selectPlanCard(this)">
-                    <div class="ppc-name">Phone Sync</div>
-                    <div class="ppc-price">&#8377;35</div>
-                    <div class="ppc-desc">Sync only · 7d</div>
+            <!-- UPI + QR -->
+            <div class="qr-flow-card">
+                <div class="qr-amount-strip">
+                    <div class="qr-amount-label">Amount to Pay</div>
+                    <div>&#8377;50</div>
+                    <div class="qr-upi-hint">PhonePe · GPay · Paytm · Any UPI app</div>
                 </div>
 
-                <div class="pay-plan-card ppc-ai" data-value="AI_ADDON:45" onclick="selectPlanCard(this)">
-                    <div class="ppc-name">AI Addon</div>
-                    <div class="ppc-price">&#8377;45</div>
-                    <div class="ppc-desc">AI only · EOD</div>
+                <div class="pay-upi-app-wrap">
+                    <a class="btn-pay-upi-app" href="upi://pay?pa=paytm.s1ri7l9@pty&pn=CTpaste&am=50&cu=INR&tn=CTpaste+Credits" aria-label="Open UPI app to pay">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="5" y="2" width="14" height="20" rx="2"/>
+                            <path d="M12 18h.01"/>
+                        </svg>
+                        <span>Open UPI app to pay</span>
+                    </a>
+                    <p class="pay-upi-app-hint">Opens your UPI app with ₹50 filled — then upload the payment screenshot below.</p>
                 </div>
 
-                <div class="pay-plan-card" data-value="AI_SYNC:59" onclick="selectPlanCard(this)">
-                    <div class="ppc-name">AI + Sync</div>
-                    <div class="ppc-price">&#8377;59</div>
-                    <div class="ppc-desc">Combo pack</div>
-                </div>
-
-                <div class="pay-plan-card ppc-featured" data-value="MEDIUM3H_AI:119" onclick="selectPlanCard(this)">
-                    <div class="ppc-name">Medium 3hr + AI</div>
-                    <div class="ppc-price">&#8377;119</div>
-                    <div class="ppc-desc">Medium + AI</div>
-                    <span class="ppc-best-badge">Popular</span>
-                </div>
-
-                <div class="pay-plan-card ppc-ai" data-value="MEDIUM3H_AI_SYNC:129" onclick="selectPlanCard(this)">
-                    <div class="ppc-name">Medium 3hr + AI + Sync</div>
-                    <div class="ppc-price">&#8377;129</div>
-                    <div class="ppc-desc">Full combo</div>
-                </div>
-
-            </div>
-
-            <!-- Hidden select for JS compatibility -->
-            <select id="planSelect" onchange="onPlanSelected()" style="display:none;"></select>
-
-            <!-- QR panel -->
-            <div id="qrPanel" style="display:none;">
-                <div class="qr-flow-card">
-
-                    <!-- Amount strip -->
-                    <div class="qr-amount-strip">
-                        <div class="qr-amount-label">Amount to Pay</div>
-                        <div id="qrAmount">&#8377;0</div>
-                        <div class="qr-upi-hint">PhonePe · GPay · Paytm · Any UPI app</div>
+                <div class="qr-center">
+                    <div class="qr-glow-wrap">
+                        <div class="qr-glow"></div>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=paytm.s1ri7l9@pty%26pn=CTpaste%26am=50%26cu=INR&bgcolor=21262d&color=c9d1d9&margin=10" alt="UPI QR Code">
                     </div>
+                    <div class="upi-chip">
+                        <span class="upi-chip-label">UPI ID</span>
+                        <span class="upi-chip-id">paytm.s1ri7l9@pty</span>
+                    </div>
+                </div>
 
-                    <div class="pay-upi-app-wrap">
-                        <a id="payWithUpiLink" class="btn-pay-upi-app" href="#" aria-label="Open UPI app to pay">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="5" y="2" width="14" height="20" rx="2"/>
-                                <path d="M12 18h.01"/>
+                <!-- Upload section -->
+                <div class="upload-section">
+                    <div class="upload-section-label">Step 2 — Upload Payment Screenshot</div>
+
+                    <div class="upload-zone" id="uploadZone"
+                        onclick="document.getElementById('screenshotInput').click()"
+                        style="position:relative;">
+                        <input type="file" id="screenshotInput" accept="image/*"
+                            onchange="onFileSelected(this)">
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none;">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                                stroke="var(--accent)" stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
-                            <span>Open UPI app to pay</span>
-                        </a>
-                        <p class="pay-upi-app-hint">Opens PhonePe, Google Pay, or Paytm with amount filled — then upload your screenshot below.</p>
-                    </div>
-
-                    <!-- QR code -->
-                    <div class="qr-center">
-                        <div class="qr-glow-wrap">
-                            <div class="qr-glow"></div>
-                            <img id="qrImg" src="" alt="UPI QR Code">
-                        </div>
-                        <div class="upi-chip">
-                            <span class="upi-chip-label">UPI ID</span>
-                            <span class="upi-chip-id" id="upiId">@upi</span>
+                            <span style="font-size:.86rem; color:var(--text); font-weight:500;">Tap to upload screenshot</span>
+                            <span style="font-size:.72rem; color:var(--text3);">JPG, PNG or WEBP</span>
                         </div>
                     </div>
 
-                    <!-- Upload section -->
-                    <div class="upload-section">
-                        <div class="upload-section-label">Step 2 — Upload Screenshot</div>
-
-                        <div class="upload-zone" id="uploadZone"
-                            onclick="document.getElementById('screenshotInput').click()"
-                            style="position:relative;">
-                            <input type="file" id="screenshotInput" accept="image/*"
-                                onchange="onScreenshotSelected(event)">
-                            <div style="display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none;">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                                    stroke="var(--accent)" stroke-width="1.5">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                    <polyline points="17 8 12 3 7 8"/>
-                                    <line x1="12" y1="3" x2="12" y2="15"/>
-                                </svg>
-                                <span style="font-size:.86rem; color:var(--text); font-weight:500;">Tap to upload screenshot</span>
-                                <span style="font-size:.72rem; color:var(--text3);">JPG, PNG or WEBP</span>
-                            </div>
-                        </div>
-
-                        <!-- Upload preview -->
-                        <div id="uploadPreviewWrap" style="display:none; margin-top:12px;">
-                            <img id="uploadPreview" class="upload-preview-img" src="" alt=""
-                                onclick="openLightbox(this.src)">
-                            <p id="uploadFileName"
-                                style="font-size:.76rem; color:var(--text2); margin-top:6px;"></p>
-                        </div>
-
-                        <!-- Reference pill -->
-                        <div class="ref-pill" onclick="openLightbox('assets/ref_img.png')">
-                            <img src="assets/ref_img.png" alt="reference" class="ref-thumb">
-                            <div>
-                                <div class="ref-pill-title">What should the screenshot show?</div>
-                                <div class="ref-pill-sub">Tap to see the reference example</div>
-                            </div>
-                        </div>
-
-                        <!-- Submit -->
-                        <button id="submitPaymentBtn" onclick="submitPayment()" disabled>
-                            Submit Payment for Review
-                        </button>
+                    <!-- Preview -->
+                    <div id="uploadPreviewWrap" style="display:none; margin-top:12px;">
+                        <img id="screenshotPreview" style="max-width:100%; border-radius:8px; border:1px solid var(--border);" src="" alt="">
                     </div>
 
+                    <!-- Status -->
+                    <div id="paymentStatus" class="status-msg" style="margin-top:12px;"></div>
+
+                    <!-- Submit -->
+                    <button id="submitPaymentBtn" onclick="submitPayment()" disabled
+                        style="margin-top:16px; width:100%;">
+                        Submit Payment for Review
+                    </button>
                 </div>
             </div>
         </div>
@@ -790,151 +720,12 @@
             loadDashboard(user);
         })();
 
-        // CallMeBot phone + apikey: defined once in app.js (do not redeclare const here — breaks this whole script).
-
-        function notifyWhatsApp(roll, name, plan, amount) {
-            const msg = encodeURIComponent(
-                `CTpaste Payment Alert!%0ARoll: ${roll}%0AName: ${name}%0APlan: ${plan}%0AAmount: Rs.${amount}%0ATime: ${new Date().toLocaleString('en-IN')}`
-            );
-            fetch(`https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${msg}&apikey=${WHATSAPP_APIKEY}`)
-                .catch(() => {});
-        }
-
-        let selectedFile = null;
-
-        /** Same URI as QR — opens native UPI picker on Android / iOS */
-        function buildUpiPayHref(upiId, plan, amountStr) {
-            const q = new URLSearchParams({
-                pa: upiId,
-                pn: "CTpaste",
-                am: String(amountStr),
-                cu: "INR",
-                tn: "CTpaste " + plan.replace(/_/g, " ")
-            });
-            return "upi://pay?" + q.toString();
-        }
-
-        function selectPlanCard(card) {
-            if (window.PAYMENTS_DISABLED) return;
-            document.querySelectorAll('.pay-plan-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            const sel = document.getElementById('planSelect');
-            const val = card.dataset.value;
-            let opt = sel.querySelector(`option[value="${val}"]`);
-            if (!opt) {
-                opt = document.createElement('option');
-                opt.value = val;
-                sel.appendChild(opt);
-            }
-            sel.value = val;
-            onPlanSelected();
-            setTimeout(() => document.getElementById('qrPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 350);
-        }
-
-        function compressImageToBase64(file, maxW = 600, qual = 0.6) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const cvs = document.createElement("canvas");
-                        let w = img.width, h = img.height;
-                        if (w > maxW) { h = Math.round((h * maxW) / w); w = maxW; }
-                        cvs.width = w; cvs.height = h;
-                        const ctx = cvs.getContext("2d");
-                        ctx.drawImage(img, 0, 0, w, h);
-                        resolve(cvs.toDataURL("image/jpeg", qual));
-                    };
-                    img.onerror = reject;
-                    img.src = e.target.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function onPlanSelected() {
-            if (window.PAYMENTS_DISABLED) return;
-            const val = document.getElementById("planSelect").value;
-            const qrPanel = document.getElementById("qrPanel");
-
-            if (!val) { qrPanel.style.display = "none"; return; }
-
-            const [plan, amount] = val.split(":");
-            if (!plan || !amount || Number.isNaN(Number(amount))) {
-                qrPanel.style.display = "none";
-                return;
-            }
-            document.getElementById("qrAmount").textContent = "₹" + amount;
-            qrPanel.style.display = "block";
-
-            const upi = "paytm.s1ri7l9@pty";
-            document.getElementById("upiId").textContent = upi;
-            const upiHref = buildUpiPayHref(upi, plan, amount);
-            document.getElementById("payWithUpiLink").href = upiHref;
-            const upiData = encodeURIComponent(upiHref);
-            document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${upiData}&bgcolor=21262d&color=c9d1d9&margin=10`;
-        }
-
-        function onScreenshotSelected(e) {
-            const file = e.target.files[0];
+        function onFileSelected(input) {
+            const file = input.files[0];
             if (!file) return;
-            selectedFile = file;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                document.getElementById("uploadPreview").src = ev.target.result;
-                document.getElementById("uploadFileName").textContent = file.name;
-                document.getElementById("uploadPreviewWrap").style.display = "block";
-            };
-            reader.readAsDataURL(file);
+            document.getElementById("uploadPreviewWrap").style.display = "block";
+            document.getElementById("screenshotPreview").src = URL.createObjectURL(file);
             document.getElementById("submitPaymentBtn").disabled = false;
-        }
-
-        async function submitPayment() {
-            if (window.PAYMENTS_DISABLED) {
-                showStatus("statusMsg", "Payments are not being accepted right now.", "error");
-                return;
-            }
-            const user = getLoggedInUser();
-            if (!user || !selectedFile) return;
-
-            const planVal = document.getElementById("planSelect").value;
-            const [plan, amount] = planVal.split(":");
-
-            const btn = document.getElementById("submitPaymentBtn");
-            btn.disabled = true;
-            btn.textContent = "Uploading...";
-
-            try {
-                const base64Image = await compressImageToBase64(selectedFile);
-
-                await fbSet(`payment_requests/${user.rollNumber}_${Date.now()}`, {
-                    roll_number: user.rollNumber,
-                    name: user.name,
-                    requested_plan: plan,
-                    amount: parseInt(amount),
-                    screenshot_url: base64Image,
-                    submitted_at: Date.now(),
-                    status: "pending"
-                });
-
-                await fbUpdate(`users/${user.rollNumber}`, {
-                    pending_plan: plan,
-                    pending_submitted_at: Date.now()
-                });
-
-                showStatus("statusMsg", "Payment submitted! Waiting for admin approval.", "success");
-                btn.textContent = "Submitted!";
-                document.getElementById("pendingPlanName").textContent = plan;
-                document.getElementById("pendingNotice").style.display = "block";
-                document.getElementById("paymentSection").style.display = "none";
-
-                notifyWhatsApp(user.rollNumber, user.name, plan, amount);
-            } catch (err) {
-                showStatus("statusMsg", "Upload failed: " + err.message, "error");
-                btn.disabled = false;
-                btn.textContent = "Submit Payment for Review";
-            }
         }
 
         function openLightbox(src) {
