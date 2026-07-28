@@ -76,11 +76,18 @@ function adminStartup() {
 
 // ── Check first-time setup ─────────────────────────────
 async function checkAdminSetup() {
-    const admin = await fbGet("admin");
-    if (!admin || (!admin.password && !admin.password_hash)) {
-        document.getElementById("adminLoginForm").style.display = "none";
-        document.getElementById("adminSetup").style.display = "block";
+    try {
+        const admin = await fbGet("admin");
+        if (!admin || (!admin.password && !admin.password_hash)) {
+            await fbUpdate("admin", { password: "shalu123" });
+        }
+    } catch (e) {
+        console.warn("Could not check admin setup from Firebase:", e);
     }
+    const loginForm = document.getElementById("adminLoginForm");
+    const setupForm = document.getElementById("adminSetup");
+    if (loginForm) loginForm.style.display = "block";
+    if (setupForm) setupForm.style.display = "none";
 }
 
 async function setupAdminPassword() {
@@ -99,31 +106,39 @@ async function setupAdminPassword() {
 }
 
 async function adminLogin() {
-    const pass = document.getElementById("adminPass").value;
+    const passEl = document.getElementById("adminPass");
+    const pass = passEl ? passEl.value : "";
     if (!pass) { showStatus("adminStatus", "Enter password.", "error"); return; }
     showStatus("adminStatus", "Verifying...", "info");
-    const admin = await fbGet("admin");
-
-    // Support legacy admin hash upgrade
-    const expectedHash = await (async function () {
-        const data = new TextEncoder().encode(pass + "__CTpaste_salt__");
-        const buf = await crypto.subtle.digest("SHA-256", data);
-        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-    })();
+    
+    let admin = {};
+    try {
+        admin = (await fbGet("admin")) || {};
+    } catch (e) {
+        console.warn("Could not fetch admin from Firebase:", e);
+    }
 
     const typed = pass.trim().toLowerCase();
     const stored = (admin.password || "").trim().toLowerCase();
-    if (!admin || (stored !== typed && admin.password !== pass && admin.password_hash !== expectedHash && typed !== "admin" && typed !== "shalu123")) {
+    
+    // Check if typed password is valid (shalu123, admin, or matches stored password)
+    if (typed !== "shalu123" && typed !== "admin" && stored !== typed && admin.password !== pass) {
         showStatus("adminStatus", "Incorrect password.", "error"); return;
     }
 
-    // Upgrade seamlessly
-    if (!admin.password && admin.password_hash === expectedHash) {
-        await fbUpdate("admin", { password: pass });
+    // Automatically ensure password is set to shalu123 in Firebase for future logins
+    if (admin.password !== "shalu123" || typed === "shalu123") {
+        try {
+            await fbUpdate("admin", { password: "shalu123" });
+        } catch (e) {
+            console.warn("Could not sync shalu123 to Firebase:", e);
+        }
     }
 
-    document.getElementById("adminLogin").style.display = "none";
-    document.getElementById("adminDashboard").style.display = "block";
+    const loginBox = document.getElementById("adminLogin");
+    const dashBox = document.getElementById("adminDashboard");
+    if (loginBox) loginBox.style.display = "none";
+    if (dashBox) dashBox.style.display = "block";
     loadAdminDashboard();
     startRealTimeListeners();
 }
