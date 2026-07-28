@@ -438,9 +438,10 @@ function renderUsersTable(entries) {
             </td>
             <td style="color:${creditsColor}; font-weight:600; font-variant-numeric:tabular-nums;">
                 ${credits.toLocaleString()}
-                <div style="display:flex;gap:4px;margin-top:4px;">
+                <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">
                     <button class="btn btn-xs btn-green" onclick="addCredits('${roll}', 7000)">+7000</button>
                     <button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red);" onclick="addCredits('${roll}', -7000)">-7000</button>
+                    <button class="btn btn-xs btn-outline" onclick="customCredits('${roll}')">Custom</button>
                 </div>
             </td>
             <td id="status_${roll}" style="color:${statusCol};font-size:.83rem;">${statusText}</td>
@@ -455,6 +456,36 @@ function renderUsersTable(entries) {
             </td>
         </tr>`;
     }).join("");
+}
+
+// ── Credits management ────────────────────────────────
+async function addCredits(roll, delta) {
+    const user = allUsers[roll] || (await fbGet(`users/${roll}`)) || {};
+    const current = parseInt(user.credits || 0, 10);
+    const next = Math.max(0, current + delta);
+    await fbUpdate(`users/${roll}`, { credits: next });
+    if (allUsers[roll]) allUsers[roll].credits = next;
+    renderUsersTable(Object.entries(allUsers));
+    flashRow(roll, delta > 0 ? "rgba(16, 185, 129, 0.2)" : "rgba(239, 68, 68, 0.2)");
+}
+
+async function customCredits(roll) {
+    const user = allUsers[roll] || {};
+    const current = parseInt(user.credits || 0, 10);
+    const input = prompt(`Enter exact new credit balance for ${roll}\n(Or start with + / - like "+5000" or "-2000"):`, current);
+    if (input === null || input.trim() === "") return;
+    let next = current;
+    const s = input.trim();
+    if (s.startsWith("+") || s.startsWith("-")) {
+        next = Math.max(0, current + parseInt(s, 10));
+    } else {
+        next = Math.max(0, parseInt(s, 10));
+    }
+    if (isNaN(next)) { alert("Please enter a valid number."); return; }
+    await fbUpdate(`users/${roll}`, { credits: next });
+    if (allUsers[roll]) allUsers[roll].credits = next;
+    renderUsersTable(Object.entries(allUsers));
+    flashRow(roll, "rgba(99, 102, 241, 0.2)");
 }
 
 // ── Suspend / Unsuspend ────────────────────────────────
