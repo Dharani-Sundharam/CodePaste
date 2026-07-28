@@ -448,8 +448,9 @@ function renderUsersTable(entries) {
             <td>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
                     ${suspended
-            ? `<button class="btn btn-xs btn-green" onclick="unsuspendUser('${roll}')">Unsuspend</button>`
-                    <button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red);" onclick='deleteUserAccount(${JSON.stringify(roll)})'>Delete account</button>
+                        ? `<button class="btn btn-xs btn-green" onclick="unsuspendUser('${roll}')">Unsuspend</button>`
+                        : `<button class="btn btn-xs btn-red" onclick="suspendUser('${roll}')">Suspend</button>`}
+                    <button class="btn btn-xs btn-outline" style="color:var(--red);border-color:var(--red);" onclick="deleteUserAccount('${roll}')">Delete account</button>
                 </div>
             </td>
         </tr>`;
