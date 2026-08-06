@@ -96,13 +96,13 @@
             margin-bottom: 24px;
         }
 
-        .dash-wrap > .card {
+        .dash-wrap>.card {
             margin-bottom: 40px !important;
             padding: 24px 22px;
             border-radius: 14px;
         }
 
-        .dash-wrap > #paymentSection {
+        .dash-wrap>#paymentSection {
             margin-bottom: 40px !important;
             padding-top: 16px;
         }
@@ -150,7 +150,7 @@
             position: absolute;
             inset: 0;
             border-radius: 14px;
-            background: linear-gradient(135deg, rgba(88,166,255,.06), transparent);
+            background: linear-gradient(135deg, rgba(88, 166, 255, .06), transparent);
             opacity: 0;
             transition: opacity .22s;
         }
@@ -159,9 +159,12 @@
             .pay-plan-card:hover {
                 border-color: var(--accent);
                 transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(88,166,255,.12);
+                box-shadow: 0 6px 20px rgba(88, 166, 255, .12);
             }
-            .pay-plan-card:hover::before { opacity: 1; }
+
+            .pay-plan-card:hover::before {
+                opacity: 1;
+            }
         }
 
         .pay-plan-card:active {
@@ -170,26 +173,37 @@
 
         .pay-plan-card.selected {
             border-color: var(--accent);
-            background: rgba(88,166,255,.07);
-            box-shadow: 0 0 0 2px rgba(88,166,255,.2), 0 6px 24px rgba(88,166,255,.12);
+            background: rgba(88, 166, 255, .07);
+            box-shadow: 0 0 0 2px rgba(88, 166, 255, .2), 0 6px 24px rgba(88, 166, 255, .12);
         }
-        .pay-plan-card.selected::before { opacity: 1; }
 
-        .ppc-featured { border-color: rgba(88,166,255,.35); }
-        .ppc-ai       { border-color: rgba(167,139,250,.30); }
+        .pay-plan-card.selected::before {
+            opacity: 1;
+        }
+
+        .ppc-featured {
+            border-color: rgba(88, 166, 255, .35);
+        }
+
+        .ppc-ai {
+            border-color: rgba(167, 139, 250, .30);
+        }
 
         @media (hover: hover) {
-            .ppc-ai:hover, .ppc-ai.selected {
+
+            .ppc-ai:hover,
+            .ppc-ai.selected {
                 border-color: var(--purple);
-                box-shadow: 0 0 0 2px rgba(167,139,250,.2), 0 6px 24px rgba(167,139,250,.12);
+                box-shadow: 0 0 0 2px rgba(167, 139, 250, .2), 0 6px 24px rgba(167, 139, 250, .12);
             }
         }
+
         .ppc-ai.selected {
             border-color: var(--purple);
-            box-shadow: 0 0 0 2px rgba(167,139,250,.2), 0 6px 24px rgba(167,139,250,.12);
+            box-shadow: 0 0 0 2px rgba(167, 139, 250, .2), 0 6px 24px rgba(167, 139, 250, .12);
         }
 
-        .ppc-name  {
+        .ppc-name {
             font-size: .8rem;
             font-weight: 700;
             color: var(--text);
@@ -198,6 +212,7 @@
             line-height: 1.25;
             max-width: 100%;
         }
+
         .ppc-price {
             font-size: 1.32rem;
             font-weight: 800;
@@ -205,8 +220,12 @@
             letter-spacing: -0.02em;
             line-height: 1.15;
         }
-        .ppc-ai .ppc-price { color: var(--purple); }
-        .ppc-desc  {
+
+        .ppc-ai .ppc-price {
+            color: var(--purple);
+        }
+
+        .ppc-desc {
             font-size: .72rem;
             color: var(--text3);
             line-height: 1.45;
@@ -214,7 +233,8 @@
 
         .ppc-best-badge {
             position: absolute;
-            top: 7px; right: 7px;
+            top: 7px;
+            right: 7px;
             font-size: .55rem;
             font-weight: 800;
             text-transform: uppercase;
@@ -242,20 +262,27 @@
             margin: 8px auto 28px;
             max-width: 100%;
         }
+
         @media (min-width: 480px) {
-            #planCardsGrid { gap: 16px; margin-bottom: 32px; }
+            #planCardsGrid {
+                gap: 16px;
+                margin-bottom: 32px;
+            }
         }
+
         #planCardsGrid .pay-plan-card {
             flex: 1 1 100px;
             min-width: 0;
             max-width: 168px;
         }
+
         @media (min-width: 480px) {
             #planCardsGrid .pay-plan-card {
                 flex: 1 1 120px;
                 max-width: 175px;
             }
         }
+
         @media (min-width: 900px) {
             #planCardsGrid .pay-plan-card {
                 flex: 0 1 148px;
@@ -265,23 +292,36 @@
 
         /* ── QR Panel ───────────────────────────────────────── */
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-8px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        #qrPanel { animation: slideDown .28s ease; max-width: 420px; margin-left: auto; margin-right: auto; }
+
+        #qrPanel {
+            animation: slideDown .28s ease;
+            max-width: 420px;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
         .qr-flow-card {
             border-radius: 16px;
             overflow: hidden;
-            border: 1px solid rgba(88,166,255,.22);
-            box-shadow: 0 0 28px rgba(88,166,255,.06);
+            border: 1px solid rgba(88, 166, 255, .22);
+            box-shadow: 0 0 28px rgba(88, 166, 255, .06);
             background: var(--bg2);
         }
 
         .qr-amount-strip {
-            background: linear-gradient(135deg, rgba(31,111,235,.16), rgba(88,166,255,.07));
+            background: linear-gradient(135deg, rgba(31, 111, 235, .16), rgba(88, 166, 255, .07));
             padding: 24px 22px;
-            border-bottom: 1px solid rgba(88,166,255,.15);
+            border-bottom: 1px solid rgba(88, 166, 255, .15);
             text-align: center;
         }
 
@@ -311,14 +351,16 @@
         .pay-upi-app-wrap {
             display: none;
             padding: 16px 20px 8px;
-            border-bottom: 1px solid rgba(88,166,255,.12);
+            border-bottom: 1px solid rgba(88, 166, 255, .12);
             text-align: center;
         }
+
         @media (pointer: coarse) and (max-width: 932px) {
             .pay-upi-app-wrap {
                 display: block;
             }
         }
+
         .btn-pay-upi-app {
             display: flex;
             align-items: center;
@@ -329,7 +371,7 @@
             font-size: 0.94rem;
             border-radius: 14px;
             background: linear-gradient(135deg, var(--accent-d), var(--accent));
-            box-shadow: 0 4px 16px rgba(31,111,235,.28);
+            box-shadow: 0 4px 16px rgba(31, 111, 235, .28);
             border: none;
             cursor: pointer;
             color: #fff !important;
@@ -341,15 +383,24 @@
             box-sizing: border-box;
             min-height: 52px;
         }
-        .btn-pay-upi-app svg { flex-shrink: 0; opacity: .95; }
+
+        .btn-pay-upi-app svg {
+            flex-shrink: 0;
+            opacity: .95;
+        }
+
         @media (hover: hover) {
             .btn-pay-upi-app:hover {
-                box-shadow: 0 6px 22px rgba(31,111,235,.45);
+                box-shadow: 0 6px 22px rgba(31, 111, 235, .45);
                 transform: translateY(-1px);
                 color: #fff !important;
             }
         }
-        .btn-pay-upi-app:active { transform: scale(.98); }
+
+        .btn-pay-upi-app:active {
+            transform: scale(.98);
+        }
+
         .pay-upi-app-hint {
             margin: 10px 0 0;
             font-size: .72rem;
@@ -389,7 +440,10 @@
         }
 
         @media (min-width: 400px) {
-            #qrImg { width: 180px; height: 180px; }
+            #qrImg {
+                width: 180px;
+                height: 180px;
+            }
         }
 
         .upi-chip {
@@ -403,8 +457,17 @@
             padding: 8px 14px;
         }
 
-        .upi-chip-label { font-size: .75rem; color: var(--text2); }
-        .upi-chip-id    { font-size: .88rem; font-weight: 700; color: var(--accent); word-break: break-all; }
+        .upi-chip-label {
+            font-size: .75rem;
+            color: var(--text2);
+        }
+
+        .upi-chip-id {
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--accent);
+            word-break: break-all;
+        }
 
         /* ── Upload section ─────────────────────────────────── */
         .upload-section {
@@ -412,7 +475,9 @@
         }
 
         @media (min-width: 480px) {
-            .upload-section { padding: 0 26px 28px; }
+            .upload-section {
+                padding: 0 26px 28px;
+            }
         }
 
         .upload-section-label {
@@ -441,15 +506,18 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(88,166,255,.05);
-            border: 1px solid rgba(88,166,255,.14);
+            background: rgba(88, 166, 255, .05);
+            border: 1px solid rgba(88, 166, 255, .14);
             border-radius: 12px;
             padding: 14px 14px;
             cursor: pointer;
             transition: background .2s;
             margin-top: 18px;
         }
-        .ref-pill:active { background: rgba(88,166,255,.1); }
+
+        .ref-pill:active {
+            background: rgba(88, 166, 255, .1);
+        }
 
         .ref-thumb {
             width: 34px;
@@ -460,8 +528,17 @@
             flex-shrink: 0;
         }
 
-        .ref-pill-title { font-size: .8rem; font-weight: 600; color: var(--accent); }
-        .ref-pill-sub   { font-size: .71rem; color: var(--text2); margin-top: 1px; }
+        .ref-pill-title {
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .ref-pill-sub {
+            font-size: .71rem;
+            color: var(--text2);
+            margin-top: 1px;
+        }
 
         /* ── Submit button ──────────────────────────────────── */
         #submitPaymentBtn {
@@ -471,7 +548,7 @@
             font-size: 0.94rem;
             border-radius: 14px;
             background: linear-gradient(135deg, var(--accent-d), var(--accent));
-            box-shadow: 0 4px 16px rgba(31,111,235,.28);
+            box-shadow: 0 4px 16px rgba(31, 111, 235, .28);
             transition: box-shadow .25s, transform .2s, opacity .2s;
             border: none;
             cursor: pointer;
@@ -480,14 +557,22 @@
             font-family: inherit;
             letter-spacing: .2px;
         }
+
         @media (hover: hover) {
             #submitPaymentBtn:not(:disabled):hover {
-                box-shadow: 0 6px 22px rgba(31,111,235,.45);
+                box-shadow: 0 6px 22px rgba(31, 111, 235, .45);
                 transform: translateY(-1px);
             }
         }
-        #submitPaymentBtn:active:not(:disabled) { transform: scale(.98); }
-        #submitPaymentBtn:disabled { opacity: .45; cursor: not-allowed; }
+
+        #submitPaymentBtn:active:not(:disabled) {
+            transform: scale(.98);
+        }
+
+        #submitPaymentBtn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
 
         /* ── Payment section header ─────────────────────────── */
         .pay-header {
@@ -523,9 +608,9 @@
             letter-spacing: .7px;
             padding: 4px 11px;
             border-radius: 20px;
-            background: rgba(63,185,80,.1);
+            background: rgba(63, 185, 80, .1);
             color: var(--green);
-            border: 1px solid rgba(63,185,80,.22);
+            border: 1px solid rgba(63, 185, 80, .22);
             white-space: nowrap;
             flex-shrink: 0;
         }
@@ -543,10 +628,12 @@
             text-align: center;
             box-shadow: 0 4px 20px rgba(210, 153, 34, 0.12);
         }
+
         .pay-ai-warn strong {
             color: #f0b429;
             font-size: 1.06em;
         }
+
         @media (max-width: 480px) {
             .pay-ai-warn {
                 font-size: 0.95rem;
@@ -563,10 +650,14 @@
         }
 
         /* Prevent overflow on mobile */
-        body { overflow-x: hidden; }
+        body {
+            overflow-x: hidden;
+        }
 
         /* Comfortable tap targets without crowding */
-        .dash-wrap .btn { min-height: 42px; }
+        .dash-wrap .btn {
+            min-height: 42px;
+        }
     </style>
 </head>
 
@@ -586,7 +677,9 @@
             </div>
             <div class="dash-header-right">
                 <a href="index.html" class="btn btn-outline btn-sm">Home</a>
-                <a href="index.html#download" class="btn btn-sm" style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; border:none; font-weight:700;">⬇ Download Now</a>
+                <a href="index.html#download" class="btn btn-sm"
+                    style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; border:none; font-weight:700;">⬇
+                    Download Now</a>
                 <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
             </div>
         </div>
@@ -601,7 +694,8 @@
 
         <!-- Credits balance -->
         <div class="stat-grid" style="grid-template-columns: 1fr 1fr; max-width: 520px;">
-            <div class="card stat-card" style="background: linear-gradient(135deg,#1a1a3e,#23234a); border-color: #4f46e5;">
+            <div class="card stat-card"
+                style="background: linear-gradient(135deg,#1a1a3e,#23234a); border-color: #4f46e5;">
                 <div class="stat-label">Credits Balance</div>
                 <div class="stat-value" id="creditsBalance" style="font-size:2rem; color:#818cf8;">—</div>
             </div>
@@ -635,10 +729,13 @@
 
             <!-- Single payment card -->
             <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
-                <div class="card" style="flex:1; min-width:220px; padding:24px; border-color:#4f46e5; background:linear-gradient(135deg,#1a1a3e,#1e1e48);">
+                <div class="card"
+                    style="flex:1; min-width:220px; padding:24px; border-color:#4f46e5; background:linear-gradient(135deg,#1a1a3e,#1e1e48);">
                     <div style="font-size:1.5rem; font-weight:800; color:#818cf8; margin-bottom:4px;">₹50</div>
-                    <div style="font-size:.9rem; color:var(--text2); margin-bottom:12px;">7,000 Credits · One-time top-up</div>
-                    <div style="font-size:.78rem; color:var(--text3);">Credits are deducted as you type (chars ÷ 1.5)</div>
+                    <div style="font-size:.9rem; color:var(--text2); margin-bottom:12px;">7,000 Credits · One-time
+                        top-up</div>
+                    <div style="font-size:.78rem; color:var(--text3);">Credits are deducted as you type (chars ÷ 1.5)
+                    </div>
                 </div>
             </div>
 
@@ -651,24 +748,28 @@
                 </div>
 
                 <div class="pay-upi-app-wrap">
-                    <a class="btn-pay-upi-app" href="upi://pay?pa=dharani3318s@okaxis&pn=CTpaste&am=50&cu=INR&tn=CTpaste+Credits" aria-label="Open UPI app to pay">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="5" y="2" width="14" height="20" rx="2"/>
-                            <path d="M12 18h.01"/>
+                    <a class="btn-pay-upi-app" href="upi://pay?pa=&pn=CTpaste&am=50&cu=INR&tn=CTpaste+Credits"
+                        aria-label="Open UPI app to pay">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="5" y="2" width="14" height="20" rx="2" />
+                            <path d="M12 18h.01" />
                         </svg>
                         <span>Open UPI app to pay</span>
                     </a>
-                    <p class="pay-upi-app-hint">Opens your UPI app with ₹50 filled — then upload the payment screenshot below.</p>
+                    <p class="pay-upi-app-hint">Opens your UPI app with ₹50 filled — then upload the payment screenshot
+                        below.</p>
                 </div>
 
                 <div class="qr-center">
                     <div class="qr-glow-wrap">
                         <div class="qr-glow"></div>
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=dharani3318s@okaxis%26pn=CTpaste%26am=50%26cu=INR&bgcolor=21262d&color=c9d1d9&margin=10" alt="UPI QR Code">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=%26pn=CTpaste%26am=50%26cu=INR&bgcolor=21262d&color=c9d1d9&margin=10"
+                            alt="UPI QR Code">
                     </div>
                     <div class="upi-chip">
                         <span class="upi-chip-label">UPI ID</span>
-                        <span class="upi-chip-id">dharani3318s@okaxis</span>
+                        <span class="upi-chip-id"></span>
                     </div>
                 </div>
 
@@ -677,25 +778,26 @@
                     <div class="upload-section-label">Step 2 — Upload Payment Screenshot</div>
 
                     <div class="upload-zone" id="uploadZone"
-                        onclick="document.getElementById('screenshotInput').click()"
-                        style="position:relative;">
-                        <input type="file" id="screenshotInput" accept="image/*"
-                            onchange="onFileSelected(this)">
-                        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none;">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                                stroke="var(--accent)" stroke-width="1.5">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
+                        onclick="document.getElementById('screenshotInput').click()" style="position:relative;">
+                        <input type="file" id="screenshotInput" accept="image/*" onchange="onFileSelected(this)">
+                        <div
+                            style="display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none;">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)"
+                                stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
                             </svg>
-                            <span style="font-size:.86rem; color:var(--text); font-weight:500;">Tap to upload screenshot</span>
+                            <span style="font-size:.86rem; color:var(--text); font-weight:500;">Tap to upload
+                                screenshot</span>
                             <span style="font-size:.72rem; color:var(--text3);">JPG, PNG or WEBP</span>
                         </div>
                     </div>
 
                     <!-- Preview -->
                     <div id="uploadPreviewWrap" style="display:none; margin-top:12px;">
-                        <img id="screenshotPreview" style="max-width:100%; border-radius:8px; border:1px solid var(--border);" src="" alt="">
+                        <img id="screenshotPreview"
+                            style="max-width:100%; border-radius:8px; border:1px solid var(--border);" src="" alt="">
                     </div>
 
                     <!-- Status -->
